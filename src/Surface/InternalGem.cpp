@@ -90,7 +90,7 @@ double geo_solid_angle (const Point3D &pTest, const Point3D p[3]){
     float l2 = n2.mag();
 
     float s = n1.dot(n2) / (l1*l2);
-    float ang = acos(max(-1.0, min(1.0,s)));
+    float ang = acos(std::max(-1.0f, std::min(1.0f,s)));
 
     tmp.cross(b, a);
     s = tmp.dot(plane);
