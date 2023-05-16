@@ -8,7 +8,6 @@ project(
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_LINK_WHAT_YOU_USE ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -126,8 +125,7 @@ set(SRC_FILES
      src/VerifyModel.cpp
  )
 
-message(WARNING ${SRC_FILES})
-add_library(spheretree SHARED ${SRC_FILES})
+add_library(spheretree STATIC ${SRC_FILES})
 
 ## Build Program
 add_executable(makeTreeGrid src/makeTreeGrid.cpp)
