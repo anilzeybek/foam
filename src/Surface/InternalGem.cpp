@@ -49,6 +49,8 @@
 
 #include "InternalGem.h"
 
+#include <algorithm>
+
 /*=========================  geo_solid_angle  =========================
   Calculates the solid angle given by the spherical projection of 
   a 3D plane polygon
