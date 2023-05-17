@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-import os
 
 from tempfile import NamedTemporaryFile
 from typing import TextIO
