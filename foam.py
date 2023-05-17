@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
+import os
 
 from tempfile import NamedTemporaryFile
 from typing import TextIO
@@ -60,9 +61,9 @@ def spheretree(mesh: Trimesh) -> list[Sphere]:
             '-branch',
             '8',
             '-depth',
-            '8',
+            '3',
             '-testerLevels',
-            '4',
+            '1',
             '-numCover',
             '10000',
             '-minCover',
@@ -78,6 +79,8 @@ def spheretree(mesh: Trimesh) -> list[Sphere]:
             '-merge',
             str(input_path),
         ])
+
+        subprocess.run(['mv', input_path.stem + '-medial.sph', 'test.sph'])
 
 
 def as_mesh(scene_or_mesh: Trimesh | Scene) -> Trimesh | None:
