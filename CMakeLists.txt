@@ -6,4 +6,3 @@ project(
 )
 
 add_subdirectory(spheretree)
-add_subdirectory(manifold)

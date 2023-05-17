@@ -13,6 +13,9 @@ from trimesh.repair import broken_faces, fill_holes, fix_inversion
 from trimesh.exchange.obj import export_obj
 from urdf_parser_py import urdf
 
+from trimesh.voxel.creation import voxelize
+from trimesh.voxel.ops import matrix_to_marching_cubes
+
 
 def create_temp_file(directory: Path | None = None,
                      extension: str | None = None,
@@ -40,23 +43,10 @@ class Sphere:
     radius: float
 
 
-def make_watertight(mesh: Trimesh) -> Trimesh:
-    with tempfile(extension='obj') as (input_mesh, input_path):
-        with tempfile(extension='obj') as (_, output_path):
-            input_mesh.write(export_obj(mesh))
-            input_mesh.flush()
-
-            subprocess.run([
-                './build/manifold/manifold',
-                '--input',
-                str(input_path),
-                '--output',
-                str(output_path),
-                '--depth',
-                '8',
-            ])
-            return as_mesh(load_mesh(output_path,
-                                     process=False))  # type: ignore
+def make_watertight(mesh: Trimesh, resolution: float = 0.01) -> Trimesh:
+    voxels = voxelize(mesh, resolution)
+    voxels.fill()
+    return matrix_to_marching_cubes(voxels.matrix, resolution)
 
 
 def spheretree(mesh: Trimesh) -> list[Sphere]:
@@ -70,9 +60,9 @@ def spheretree(mesh: Trimesh) -> list[Sphere]:
             '-branch',
             '8',
             '-depth',
-            '1',
+            '8',
             '-testerLevels',
-            '2',
+            '4',
             '-numCover',
             '10000',
             '-minCover',
@@ -142,7 +132,6 @@ def main(filename: str = "assets/panda/panda.urdf"):
                 scale = geometry.scale if geometry.scale else [1, 1, 1]
                 print(mesh_filename)
                 mesh = as_mesh(load_mesh(path / mesh_filename, process=False))
-
 
                 if mesh:
                     spheres = spherize_mesh(mesh)

@@ -13,3 +13,4 @@ Makefile
 /src/makeTreeHubbard
 /src/makeTreeGrid
 /build/
+/.mypy_cache/
