@@ -1,10 +1,12 @@
 from json import load as jsload
 
+import random
 from fire import Fire
 from trimesh.creation import icosphere
 from trimesh.exchange.load import load_mesh
 from trimesh.transformations import translation_matrix
 from trimesh.viewer import SceneViewer
+import matplotlib as mpl
 
 from common import *
 
@@ -34,9 +36,10 @@ def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
                 f"Level {level} greater than available ({len(data)})!")
         sphere_data = data[level]['spheres']
 
+        cm = mpl.colormaps['viridis']
         for sphere in sphere_data:
             sphere_mesh = icosphere(radius=sphere.radius)
-            sphere_mesh.visual.face_colors = [200, 200, 250, 100]
+            sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [50]
             scene.add_geometry(sphere_mesh,
                                transform=translation_matrix(sphere.origin))
 
