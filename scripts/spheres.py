@@ -3,31 +3,45 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from os import remove
+from json import dumps, JSONEncoder
+from subprocess import run
 from fire import Fire
-from trimesh import Scene, Trimesh, load_mesh
+from trimesh.scene.scene import Scene
+from trimesh.base import Trimesh
+from trimesh.exchange.load import load_mesh
+from trimesh.exchange.obj import export_obj
 from trimesh.util import concatenate
 from trimesh.voxel.creation import voxelize
 from trimesh.voxel.ops import matrix_to_marching_cubes
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class Sphere:
     origin: tuple[float, float, float]
     radius: float
 
+    def __init__(self, x: float, y: float, z: float, r: float):
+        self.origin = (x, y, z)
+        self.radius = r
+
+
+class SphereEncoder(JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, Sphere):
+            return {'origin': obj.origin, 'radius': obj.radius}
+
+        return JSONEncoder.default(self, obj)
+
 
 @contextmanager
-def tempfile(directory: Path | None = None,
-             extension: str | None = None,
-             binary: bool = False):
-    file = NamedTemporaryFile(mode='wb' if binary else 'w',
-                              dir=directory if directory else None,
-                              suffix=f'.{extension}' if extension else None)
-    path = Path(f.name)  # type: ignore
+def tempmesh():
+    f = NamedTemporaryFile('w', suffix=f'.obj')
     try:
-        yield file, path
+        yield f, Path(f.name)
     finally:
-        file.close()
+        f.close()
 
 
 def as_mesh(scene_or_mesh: Trimesh | Scene) -> Trimesh:
@@ -49,20 +63,33 @@ def make_watertight(mesh: Trimesh, resolution: float = 0.01) -> Trimesh:
     return matrix_to_marching_cubes(voxels.matrix, resolution)
 
 
-def spheretree(mesh: Trimesh) -> list[Sphere]:
-    _ = mesh.vertex_normals
-    with tempfile(extension='obj') as (input_mesh, input_path):
-        input_mesh.write(export_obj(mesh))
+def main(mesh: str,
+         output: str | None = None,
+         depth: int = 2,
+         branch: int = 10,
+         tester_level: int = 1):
+    mesh_filepath = Path(mesh)
+    if not mesh_filepath.exists:
+        raise RuntimeError(f"Path {mesh} does not exist!")
+
+    loaded_mesh = as_mesh(load_mesh(mesh_filepath,
+                                    process=False))  # type: ignore
+    watertight_mesh = loaded_mesh if loaded_mesh.is_watertight else make_watertight(
+        loaded_mesh)
+
+    _ = watertight_mesh.vertex_normals  # Need to compute vertex normals
+    with tempmesh() as (input_mesh, input_path):
+        input_mesh.write(export_obj(watertight_mesh))
         input_mesh.flush()
 
-        subprocess.run([
+        run([
             './build/spheretree/makeTreeMedial',
             '-branch',
-            '8',
+            str(branch),
             '-depth',
-            '3',
+            str(depth),
             '-testerLevels',
-            '1',
+            str(tester_level),
             '-numCover',
             '10000',
             '-minCover',
@@ -79,20 +106,40 @@ def spheretree(mesh: Trimesh) -> list[Sphere]:
             str(input_path),
         ])
 
-        subprocess.run(['mv', input_path.stem + '-medial.sph', 'test.sph'])
+        output_file = input_path.parent / (input_path.stem + '-medial.sph')
 
+        with open(output_file, 'r') as output_spheres:
+            lines = output_spheres.readlines()
+            spheres_per_level = [
+                int(line.split(':')[1]) for line in lines if 'Num' in line
+            ]
 
-def main(mesh: str):
-    mesh_filepath = Path(mesh)
-    if not mesh_filepath.exists:
-        raise RuntimeError(f"Path {mesh} does not exist!")
+            mean_error = [
+                float(line.split(':')[1]) for line in lines if 'Mean' in line
+            ]
 
-    loaded_mesh = as_mesh(load_mesh(mesh_filepath,
-                                    process=False))  # type: ignore
-    watertight_mesh = loaded_mesh if loaded_mesh.is_watertight else make_watertight(
-        loaded_mesh)
+            output_json = []
+            for i, (level, error) in enumerate(
+                    zip(spheres_per_level, mean_error, strict=True)):
+                start = 1 + sum(spheres_per_level[:i])
+                spheres = [
+                    Sphere(*list(map(float, line.split()))[:-1])
+                    for line in lines[start:start + level]
+                ]
 
-    spheres = spherize_mesh(watertight_mesh)
+                output_json.append({
+                    'n_spheres': level,
+                    'mean_error': error,
+                    'spheres': spheres
+                })
+
+            if not output:
+                output = mesh_filepath.stem + "-spheres.json"
+
+            with open(output, 'w') as f:
+                f.write(dumps(output_json, indent=4, cls=SphereEncoder))
+
+        remove(output_file)
 
 
 if __name__ == "__main__":
