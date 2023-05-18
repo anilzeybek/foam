@@ -8,6 +8,8 @@ from trimesh.exchange.load import load_mesh
 from trimesh.exchange.obj import export_obj
 from trimesh.voxel.creation import voxelize
 from trimesh.voxel.ops import matrix_to_marching_cubes
+from trimesh.viewer import SceneViewer
+from trimesh.repair import *
 
 from common import *
 
@@ -22,23 +24,17 @@ def main(mesh: str,
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
 
-    loaded_mesh = as_mesh(load_mesh(mesh_filepath,
-                                    process=False))  # type: ignore
+    loaded_mesh = as_mesh(load_mesh(mesh_filepath))  # type: ignore
 
-    if not loaded_mesh.is_watertight:
-        voxels = voxelize(loaded_mesh, resolution)
-        voxels.fill()
-        watertight_mesh = matrix_to_marching_cubes(voxels.matrix, resolution)
-    else:
-        watertight_mesh = loaded_mesh
+    _ = loaded_mesh.vertex_normals  # Need to compute vertex normals
 
-    _ = watertight_mesh.vertex_normals  # Need to compute vertex normals
     with tempmesh() as (input_mesh, input_path):
-        input_mesh.write(export_obj(watertight_mesh))
+        input_mesh.write(export_obj(loaded_mesh))
         input_mesh.flush()
 
         run([
             '../build/spheretree/makeTreeMedial',
+            '-verify',
             '-branch',
             str(branch),
             '-depth',
@@ -48,7 +44,7 @@ def main(mesh: str,
             '-numCover',
             '10000',
             '-minCover',
-            '5',
+            '1',
             '-initSpheres',
             '1000',
             '-minSpheres',
@@ -62,10 +58,12 @@ def main(mesh: str,
             'simplex',
             '-maxOptLevel',
             '1',
-            str(input_path)
+            str(input_path),
         ])
 
         output_file = input_path.parent / (input_path.stem + '-medial.sph')
+        if not output_file.exists:
+            raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
 
         low_bounds, high_bounds = loaded_mesh.bounds
         offset = (high_bounds + low_bounds) / 2
@@ -76,16 +74,29 @@ def main(mesh: str,
                 int(line.split(':')[1]) for line in lines if 'Num' in line
             ]
 
+            best_error = [
+                float(line.split(':')[1]) for line in lines if 'Best' in line
+            ]
+
+            worst_error = [
+                float(line.split(':')[1]) for line in lines if 'Worst' in line
+            ]
+
             mean_error = [
                 float(line.split(':')[1]) for line in lines if 'Mean' in line
             ]
 
             output_json = []
-            for i, (level, error) in enumerate(
-                    zip(spheres_per_level, mean_error, strict=True)):
+            for i, (level, mean, best, worst) in enumerate(
+                    zip(spheres_per_level,
+                        mean_error,
+                        best_error,
+                        worst_error,
+                        strict=True)):
                 start = 1 + sum(spheres_per_level[:i])
                 spheres = [
-                    Sphere(*list(map(float, line.split()))[:-1], offset)  # type: ignore
+                    Sphere(*list(map(float, line.split()))[:-1],
+                           offset)  # type: ignore
                     for line in lines[start:start + level]
                 ]
 
@@ -93,7 +104,9 @@ def main(mesh: str,
 
                 output_json.append({
                     'n_spheres': level,
-                    'mean_error': error,
+                    'mean_error': mean,
+                    'best_error': best,
+                    'worst_error': worst,
                     'spheres': spheres
                 })
 

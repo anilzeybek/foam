@@ -39,7 +39,7 @@ def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
         cm = mpl.colormaps['viridis']
         for sphere in sphere_data:
             sphere_mesh = icosphere(radius=sphere.radius)
-            sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [50]
+            sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [100]
             scene.add_geometry(sphere_mesh,
                                transform=translation_matrix(sphere.origin))
 
