@@ -14,3 +14,4 @@ Makefile
 /src/makeTreeGrid
 /build/
 /.mypy_cache/
+*.json
