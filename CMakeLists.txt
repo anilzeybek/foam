@@ -22,18 +22,17 @@ set(CMAKE_MODULE_PATH
 
 include(CompilerSettings)
 include(HelperFunctions)
-include(FeatureSummary)
 
 message(STATUS "Building ${CMAKE_BUILD_TYPE}")
 
 add_subdirectory(external)
+
+set(FOAM_PROGRAMS_DIR ${CMAKE_SOURCE_DIR}/foam/external)
 
 get_all_targets(all_targets)
 foreach(target ${all_targets})
   add_custom_target(${target}_fake ALL)
   add_dependencies(${target}_fake ${target})
   add_custom_command(TARGET ${target}_fake POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    $<TARGET_FILE:${target}>
-    ${CMAKE_SOURCE_DIR}/foam/bin)
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> ${FOAM_PROGRAMS_DIR})
 endforeach()
