@@ -6,6 +6,8 @@ from trimesh.base import Trimesh
 from trimesh.scene.scene import Scene
 from trimesh.util import concatenate
 from trimesh.exchange.load import load_mesh
+from trimesh.repair import *
+from trimesh.smoothing import filter_humphrey, filter_taubin
 
 from .redirect_stream import *
 
@@ -41,3 +43,13 @@ def load_mesh_file(mesh_filepath: Path) -> Trimesh:
 
     except Exception as e:
         raise e
+
+def fix_mesh(mesh: Trimesh):
+    fix_normals(mesh)
+    fix_inversion(mesh)
+    fix_winding(mesh)
+    mesh.vertex_normals = -mesh.vertex_normals
+
+def smooth_mesh(mesh: Trimesh):
+    filter_humphrey(mesh, iterations=100)
+    # filter_taubin(mesh)

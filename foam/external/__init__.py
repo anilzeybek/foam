@@ -17,6 +17,8 @@ MAKE_TREE_OCTREE_PATH = EXTERNAL_BINARY_DIR / "makeTreeOctree"
 MAKE_TREE_SPAWN_PATH = EXTERNAL_BINARY_DIR / "makeTreeSpawn"
 MANIFOLD_PATH = EXTERNAL_BINARY_DIR / "manifold"
 SIMPLIFY_PATH = EXTERNAL_BINARY_DIR / "simplify"
+MANIFOLD_OLD_PATH = EXTERNAL_BINARY_DIR / "manifold_old"
+SIMPLIFY_OLD_PATH = EXTERNAL_BINARY_DIR / "simplify_old"
 
 
 def read_spherization_file(filename: Path, offset: NDArray) -> list[Spherization]:
@@ -52,8 +54,8 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str]):
         input_mesh.flush()
 
         output_file = input_path.parent / (input_path.stem + '-medial.sph')
-        with RedirectStream(stdout):
-            run_subprocess(command + [str(input_path)])
+        # with RedirectStream(stdout):
+        run_subprocess(command + [str(input_path)])
 
     if not output_file.exists():
         raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
@@ -127,7 +129,6 @@ def compute_medial_spheres(
 
 
 def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> Trimesh:
-    _ = mesh.vertex_normals    # Need to compute vertex normals
     with tempmesh() as (input_mesh, input_path):
         input_mesh.write(export_obj(mesh))
         input_mesh.flush()
@@ -140,6 +141,39 @@ def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> 
                     str(output_path),
                     str(ratio),
                     str(aggressiveness),
+                    ]
+                )
+
+            return load_mesh_file(output_path)
+
+
+def manifold(mesh: Trimesh, leaves: int = 1000) -> Trimesh:
+    _ = mesh.vertex_normals    # Need to compute vertex normals
+    with tempmesh() as (input_mesh, input_path):
+        input_mesh.write(export_obj(mesh))
+        input_mesh.flush()
+
+        with tempmesh() as (_, output_path):
+            run_subprocess([str(MANIFOLD_OLD_PATH), str(input_path), str(output_path), str(leaves)])
+            return load_mesh_file(output_path)
+
+
+def manifold_plus(mesh: Trimesh, depth: int = 8) -> Trimesh:
+    _ = mesh.vertex_normals    # Need to compute vertex normals
+    with tempmesh() as (input_mesh, input_path):
+        input_mesh.write(export_obj(mesh))
+        input_mesh.flush()
+
+        with tempmesh() as (_, output_path):
+            run_subprocess(
+                [
+                    str(MANIFOLD_OLD_PATH),
+                    '--input',
+                    str(input_path),
+                    '--output',
+                    str(output_path),
+                    '--depth',
+                    str(depth)
                     ]
                 )
 

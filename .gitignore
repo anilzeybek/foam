@@ -27,3 +27,5 @@ Makefile
 /foam/external/makeTreeHubbard
 /foam/external/makeTreeGrid
 /foam/external/libspheretree.a
+/foam/external/manifold_old
+/foam/external/simplify_old

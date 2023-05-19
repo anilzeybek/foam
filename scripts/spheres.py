@@ -4,6 +4,7 @@ from pathlib import Path
 from fire import Fire
 
 from foam import *
+from trimesh.viewer import SceneViewer
 
 
 def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, tester_level: int = 2):
@@ -14,7 +15,10 @@ def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, 
     loaded_mesh = load_mesh_file(mesh_filepath) # type: ignore
 
     if not check_valid_for_spherization(loaded_mesh):
-        loaded_mesh = simplify(loaded_mesh)
+        loaded_mesh = manifold(loaded_mesh, 1000)
+        smooth_mesh(loaded_mesh)
+
+    SceneViewer(Scene(loaded_mesh))
 
     spheres = compute_medial_spheres(loaded_mesh, depth, branch, tester_level)
 
