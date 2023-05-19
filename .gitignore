@@ -16,3 +16,6 @@ Makefile
 /.mypy_cache/
 *.json
 /scripts/__pycache__/
+/foam/makeTreeMedial
+*.pyc
+/foam.egg-info/

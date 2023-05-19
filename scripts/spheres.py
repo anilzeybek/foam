@@ -1,122 +1,26 @@
 from json import dumps
-from os import remove
 from pathlib import Path
-from subprocess import run
 
 from fire import Fire
 from trimesh.exchange.load import load_mesh
-from trimesh.exchange.obj import export_obj
-from trimesh.voxel.creation import voxelize
-from trimesh.voxel.ops import matrix_to_marching_cubes
-from trimesh.viewer import SceneViewer
-from trimesh.repair import *
 
-from common import *
+from foam import *
 
 
-def main(mesh: str,
-         output: str | None = None,
-         resolution: float = 0.01,
-         depth: int = 1,
-         branch: int = 8,
-         tester_level: int = 2):
+def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, tester_level: int = 2):
     mesh_filepath = Path(mesh)
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
 
-    loaded_mesh = as_mesh(load_mesh(mesh_filepath))  # type: ignore
+    loaded_mesh = as_mesh(load_mesh(mesh_filepath)) # type: ignore
 
-    _ = loaded_mesh.vertex_normals  # Need to compute vertex normals
+    spheres = compute_medial_spheres(loaded_mesh, depth, branch, tester_level)
 
-    with tempmesh() as (input_mesh, input_path):
-        input_mesh.write(export_obj(loaded_mesh))
-        input_mesh.flush()
+    if not output:
+        output = mesh_filepath.stem + "-spheres.json"
 
-        run([
-            '../build/spheretree/makeTreeMedial',
-            '-verify',
-            '-branch',
-            str(branch),
-            '-depth',
-            str(depth),
-            '-testerLevels',
-            str(tester_level),
-            '-numCover',
-            '10000',
-            '-minCover',
-            '1',
-            '-initSpheres',
-            '1000',
-            '-minSpheres',
-            '200',
-            '-erFact',
-            '2',
-            '-nopause',
-            '-expand',
-            '-merge',
-            '-optimise',
-            'simplex',
-            '-maxOptLevel',
-            '1',
-            str(input_path),
-        ])
-
-        output_file = input_path.parent / (input_path.stem + '-medial.sph')
-        if not output_file.exists:
-            raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
-
-        low_bounds, high_bounds = loaded_mesh.bounds
-        offset = (high_bounds + low_bounds) / 2
-
-        with open(output_file, 'r') as output_spheres:
-            lines = output_spheres.readlines()
-            spheres_per_level = [
-                int(line.split(':')[1]) for line in lines if 'Num' in line
-            ]
-
-            best_error = [
-                float(line.split(':')[1]) for line in lines if 'Best' in line
-            ]
-
-            worst_error = [
-                float(line.split(':')[1]) for line in lines if 'Worst' in line
-            ]
-
-            mean_error = [
-                float(line.split(':')[1]) for line in lines if 'Mean' in line
-            ]
-
-            output_json = []
-            for i, (level, mean, best, worst) in enumerate(
-                    zip(spheres_per_level,
-                        mean_error,
-                        best_error,
-                        worst_error,
-                        strict=True)):
-                start = 1 + sum(spheres_per_level[:i])
-                spheres = [
-                    Sphere(*list(map(float, line.split()))[:-1],
-                           offset)  # type: ignore
-                    for line in lines[start:start + level]
-                ]
-
-                spheres = list(filter(lambda s: s.radius > 0, spheres))
-
-                output_json.append({
-                    'n_spheres': level,
-                    'mean_error': mean,
-                    'best_error': best,
-                    'worst_error': worst,
-                    'spheres': spheres
-                })
-
-            if not output:
-                output = mesh_filepath.stem + "-spheres.json"
-
-            with open(output, 'w') as f:
-                f.write(dumps(output_json, indent=4, cls=SphereEncoder))
-
-        remove(output_file)
+    with open(output, 'w') as f:
+        f.write(dumps(spheres, indent = 4, cls = SphereEncoder))
 
 
 if __name__ == "__main__":
