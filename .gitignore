@@ -19,3 +19,11 @@ Makefile
 /foam/makeTreeMedial
 *.pyc
 /foam.egg-info/
+/foam/external/simplify
+/foam/external/manifold
+/foam/external/makeTreeSpawn
+/foam/external/makeTreeOctree
+/foam/external/makeTreeMedial
+/foam/external/makeTreeHubbard
+/foam/external/makeTreeGrid
+/foam/external/libspheretree.a
