@@ -1,5 +1,4 @@
 from collections import defaultdict
-from copy import deepcopy
 from itertools import chain
 from pathlib import Path
 import xmltodict
