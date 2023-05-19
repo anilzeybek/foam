@@ -22,7 +22,14 @@ class SphereEncoder(JSONEncoder):
 
     def default(self, obj):
         if isinstance(obj, Sphere):
-            return {'origin': obj.origin, 'radius': obj.radius}
+            return {'origin': list(obj.origin), 'radius': obj.radius}
+        if isinstance(obj, Spherization):
+            return {
+                'mean': obj.mean_error,
+                'best': obj.best_error,
+                'worst': obj.worst_error,
+                'spheres': obj.spheres
+                }
 
         return JSONEncoder.default(self, obj)
 
@@ -35,6 +42,10 @@ class SphereDecoder(JSONDecoder):
     def object_hook(self, dct):
         if 'origin' in dct and 'radius' in dct:
             return Sphere(*dct['origin'], dct['radius']) # type: ignore
+
+        if 'mean' in dct and 'best' in dct and 'worst' in dct and 'spheres' in dct:
+            return Spherization(dct['spheres'], dct['mean'], dct['best'], dct['worst'])
+
         return dct
 
 

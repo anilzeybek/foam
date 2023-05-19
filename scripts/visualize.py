@@ -8,7 +8,7 @@ from trimesh.transformations import translation_matrix
 from trimesh.viewer import SceneViewer
 import matplotlib as mpl
 
-from common import *
+from foam import *
 
 
 def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
@@ -28,14 +28,13 @@ def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
             raise RuntimeError(f"Path {spheres} does not exist!")
 
         with open(sphere_filepath, 'r') as json_file:
-            data = jsload(json_file, cls = SphereDecoder)
+            spherization = jsload(json_file, cls = SphereDecoder)
 
-        if level > len(data):
+        if level > len(spherization):
             raise RuntimeError(f"Level {level} greater than available ({len(data)})!")
-        sphere_data = data[level]['spheres']
 
         cm = mpl.colormaps['viridis']
-        for sphere in sphere_data:
+        for sphere in spherization[level].spheres:
             sphere_mesh = icosphere(radius = sphere.radius)
             sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [100]
             scene.add_geometry(sphere_mesh, transform = translation_matrix(sphere.origin))

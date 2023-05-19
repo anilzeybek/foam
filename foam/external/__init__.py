@@ -1,3 +1,4 @@
+from sys import stdout
 from pathlib import Path
 from os import remove as remove_file
 from subprocess import run as run_subprocess
@@ -44,64 +45,17 @@ def read_spherization_file(filename: Path, offset: NDArray) -> list[Spherization
     return output
 
 
-def compute_medial_spheres(
-        mesh: Trimesh,
-        depth: int = 1,
-        branch: int = 8,
-        tester_level: int = 2,
-        num_cover: int = 10000,
-        min_cover: int = 1,
-        init_spheres: int = 1000,
-        min_spheres: int = 200,
-        er_fact: int = 2,
-        expand: bool = True,
-        merge: bool = True,
-        optimize: bool = True,
-        optimization_level: int = 1
-    ) -> list[Spherization]:
-
+def compute_spheres_helper(mesh: Trimesh, command: list[str]):
     _ = mesh.vertex_normals    # Need to compute vertex normals
     with tempmesh() as (input_mesh, input_path):
         input_mesh.write(export_obj(mesh))
         input_mesh.flush()
 
         output_file = input_path.parent / (input_path.stem + '-medial.sph')
+        with RedirectStream(stdout):
+            run_subprocess(command + [str(input_path)])
 
-        command = [
-            str(Path(__file__).parent / 'makeTreeMedial'),
-            '-nopause',
-            '-verify',
-            '-branch',
-            str(branch),
-            '-depth',
-            str(depth),
-            '-testerLevels',
-            str(tester_level),
-            '-numCover',
-            str(num_cover),
-            '-minCover',
-            str(min_cover),
-            '-initSpheres',
-            str(init_spheres),
-            '-minSpheres',
-            str(min_spheres),
-            '-erFact',
-            str(er_fact),
-            '-maxOptLevel',
-            str(optimization_level),
-            str(input_path),
-            ]
-
-        if expand:
-            command.append('-expand')
-        if merge:
-            command.append('-merge')
-        if optimize:
-            command.extend(['-optimise', 'simplex'])
-
-        run_subprocess(command)
-
-    if not output_file.exists:
+    if not output_file.exists():
         raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
 
     low_bounds, high_bounds = mesh.bounds
@@ -111,3 +65,82 @@ def compute_medial_spheres(
     remove_file(output_file)
 
     return spheres
+
+
+def check_valid_for_spherization(mesh: Trimesh) -> bool:
+    try:
+        command = [str(MAKE_TREE_MEDIAL_PATH), '-nopause', '-verify', '-depth', '0']
+        compute_spheres_helper(mesh, command)
+        return True
+    except:
+        return False
+
+
+def compute_medial_spheres(
+        mesh: Trimesh,
+        depth: int = 1,
+        branch: int = 8,
+        tester_level: int = 2,
+        num_cover: int = 5000,
+        min_cover: int = 5,
+        init_spheres: int = 500,
+        min_spheres: int = 100,
+        er_fact: int = 2,
+        expand: bool = True,
+        merge: bool = True,
+        optimize: bool = True,
+        optimization_level: int = 1
+    ) -> list[Spherization]:
+
+    command = [
+        str(MAKE_TREE_MEDIAL_PATH),
+        '-nopause',
+        '-verify',
+        '-branch',
+        str(branch),
+        '-depth',
+        str(depth),
+        '-testerLevels',
+        str(tester_level),
+        '-numCover',
+        str(num_cover),
+        '-minCover',
+        str(min_cover),
+        '-initSpheres',
+        str(init_spheres),
+        '-minSpheres',
+        str(min_spheres),
+        '-erFact',
+        str(er_fact),
+        '-maxOptLevel',
+        str(optimization_level),
+        ]
+
+    if expand:
+        command.append('-expand')
+    if merge:
+        command.append('-merge')
+    if optimize:
+        command.extend(['-optimise', 'simplex'])
+
+    return compute_spheres_helper(mesh, command)
+
+
+def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> Trimesh:
+    _ = mesh.vertex_normals    # Need to compute vertex normals
+    with tempmesh() as (input_mesh, input_path):
+        input_mesh.write(export_obj(mesh))
+        input_mesh.flush()
+
+        with tempmesh() as (_, output_path):
+            run_subprocess(
+                [
+                    str(SIMPLIFY_PATH),
+                    str(input_path),
+                    str(output_path),
+                    str(ratio),
+                    str(aggressiveness),
+                    ]
+                )
+
+            return load_mesh_file(output_path)

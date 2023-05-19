@@ -5,6 +5,9 @@ from tempfile import NamedTemporaryFile
 from trimesh.base import Trimesh
 from trimesh.scene.scene import Scene
 from trimesh.util import concatenate
+from trimesh.exchange.load import load_mesh
+
+from .redirect_stream import *
 
 
 @contextmanager
@@ -26,3 +29,15 @@ def as_mesh(scene_or_mesh: Trimesh | Scene) -> Trimesh | None:
                 )                                                                                          # type: ignore
     else:
         return scene_or_mesh
+
+
+def load_mesh_file(mesh_filepath: Path) -> Trimesh:
+    try:
+        mesh = as_mesh(load_mesh(mesh_filepath))   # type: ignore
+        if mesh is None:
+            raise RuntimeError("Failed to load mesh!")
+
+        return mesh
+
+    except Exception as e:
+        raise e

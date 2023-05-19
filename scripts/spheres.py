@@ -2,7 +2,6 @@ from json import dumps
 from pathlib import Path
 
 from fire import Fire
-from trimesh.exchange.load import load_mesh
 
 from foam import *
 
@@ -12,7 +11,10 @@ def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, 
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
 
-    loaded_mesh = as_mesh(load_mesh(mesh_filepath)) # type: ignore
+    loaded_mesh = load_mesh_file(mesh_filepath) # type: ignore
+
+    if not check_valid_for_spherization(loaded_mesh):
+        loaded_mesh = simplify(loaded_mesh)
 
     spheres = compute_medial_spheres(loaded_mesh, depth, branch, tester_level)
 
