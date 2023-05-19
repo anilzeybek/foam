@@ -1,0 +1,6 @@
+[submodule "external/manifold"]
+	path = external/manifold
+	url = git@github.com:hjwdzh/ManifoldPlus.git
+[submodule "external/simplify"]
+	path = external/simplify
+	url = git@github.com:sp4cerat/Fast-Quadric-Mesh-Simplification.git
