@@ -3,6 +3,7 @@ from itertools import chain
 from pathlib import Path
 import xmltodict
 from concurrent.futures import ThreadPoolExecutor, wait
+from trimesh.transformations import euler_matrix, translation_matrix, concatenate_matrices
 
 from fire import Fire
 from foam import *
@@ -11,11 +12,19 @@ from foam import *
 def generate_spheres(
         mesh_filename: Path,
         scale: NDArray | None,
+        origin_position: list[float] | None,
+        origin_orientation: list[float] | None,
         depth: int = 1,
         branch: int = 8,
         manifold_leaves: int = 1000
     ) -> Spherization:
     loaded_mesh = load_mesh_file(mesh_filename)
+
+    if origin_orientation is not None and origin_position is not None:
+        p = translation_matrix(origin_position)
+        o = euler_matrix(*origin_orientation, 'rxyz')
+        tf = concatenate_matrices(p, o)
+        loaded_mesh.apply_transform(tf)
 
     if scale is not None:
         loaded_mesh.apply_scale(scale)
@@ -58,7 +67,12 @@ def main(
 
         collision = link['collision']  # TODO: Assumes one collision geometry right now
         geometry = collision['geometry']
-        print(geometry)
+
+        origin_position = None
+        origin_orientation = None
+        if 'origin' in collision:
+            origin_position = list(map(float, collision['origin']['@xyz'].split()))
+            origin_orientation = list(map(float, collision['origin']['@rpy'].split()))
 
         if 'mesh' in geometry:
             mesh = geometry['mesh']
@@ -67,7 +81,14 @@ def main(
 
             name_to_future[name].append(
                 executor.submit(
-                    generate_spheres, path / mesh_filename, scale, depth, branch, manifold_leaves
+                    generate_spheres,
+                    path / mesh_filename,
+                    scale,
+                    origin_position,
+                    origin_orientation,
+                    depth,
+                    branch,
+                    manifold_leaves
                     )
                 )
 
