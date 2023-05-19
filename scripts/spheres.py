@@ -7,20 +7,21 @@ from foam import *
 from trimesh.viewer import SceneViewer
 
 
-def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, tester_level: int = 2):
+def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, manifold_leaves: int = 1000):
     mesh_filepath = Path(mesh)
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
 
-    loaded_mesh = load_mesh_file(mesh_filepath) # type: ignore
+    loaded_mesh = load_mesh_file(mesh_filepath)    # type: ignore
 
     if not check_valid_for_spherization(loaded_mesh):
-        loaded_mesh = manifold(loaded_mesh, 1000)
+        loaded_mesh = manifold(loaded_mesh, manifold_leaves)
         smooth_mesh(loaded_mesh)
 
-    SceneViewer(Scene(loaded_mesh))
+    if not check_valid_for_spherization(loaded_mesh):
+        raise RuntimeError("Failed to make mesh valid!")
 
-    spheres = compute_medial_spheres(loaded_mesh, depth, branch, tester_level)
+    spheres = compute_medial_spheres(loaded_mesh, depth = depth, branch = branch)
 
     if not output:
         output = mesh_filepath.stem + "-spheres.json"
