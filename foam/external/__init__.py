@@ -47,7 +47,7 @@ def read_spherization_file(filename: Path, offset: NDArray) -> list[Spherization
     return output
 
 
-def compute_spheres_helper(mesh: Trimesh, command: list[str]):
+def compute_spheres_helper(mesh: Trimesh, command: list[str]) -> list[Spherization]:
     _ = mesh.vertex_normals    # Need to compute vertex normals
     with tempmesh() as (input_mesh, input_path):
         input_mesh.write(export_obj(mesh))

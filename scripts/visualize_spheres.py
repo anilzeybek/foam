@@ -11,7 +11,7 @@ import matplotlib as mpl
 from foam import *
 
 
-def main(mesh: str, spheres: str, depth: int = 1):
+def main(mesh: str, spheres: str | None = None, depth: int = 1):
     scene = Scene()
     if mesh:
         mesh_filepath = Path(mesh)
