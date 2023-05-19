@@ -2,9 +2,7 @@ from json import dumps
 from pathlib import Path
 
 from fire import Fire
-
 from foam import *
-from trimesh.viewer import SceneViewer
 
 
 def main(mesh: str, output: str | None = None, depth: int = 1, branch: int = 8, manifold_leaves: int = 1000):

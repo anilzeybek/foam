@@ -24,7 +24,10 @@ Compiled script binaries are copied into the `foam/external` directory.
 ### [SphereTree](https://github.com/mlund/spheretree)
 The code in the `./spheretree` directory has been copied from the linked directory and modified to build on modern systems with `CMake` rather than `autotools`.
 
-### [ManifoldPlus](https://github.com/hjwdzh/ManifoldPlus/tree/master)
+### [Manifold](https://github.com/hjwdzh/Manifold)
+This code is included as a submodule.
+
+### [ManifoldPlus](https://github.com/hjwdzh/ManifoldPlus)
 This code is included as a submodule.
 
 ### [Quadric Mesh Simplification](https://github.com/sp4cerat/Fast-Quadric-Mesh-Simplification)
