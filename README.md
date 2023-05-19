@@ -13,8 +13,11 @@ cmake --build build/
 :warning: HEAVY WIP :warning:
 In the `scripts` directory:
 
-- `python spheres.py <mesh>`: creates spheres
-- `python visualize.py --mesh <mesh> --spheres <spheres>`: visualizes spheres and mesh
+- `python generate_spheres.py <mesh>`: creates spheres.
+  Optionally specify `--depth <depth>` and `--branch <branching factor>` to control sphere generation process.
+  Can also specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
+- `python visualize_spheres.py <mesh> <spheres>`: visualizes spheres and mesh.
+  Optionally specify `--depth <depth>` for the sphere level to visualize.
 
 ## Third-party Dependencies
 

@@ -11,7 +11,7 @@ import matplotlib as mpl
 from foam import *
 
 
-def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
+def main(mesh: str, spheres: str, depth: int = 1):
     scene = Scene()
     if mesh:
         mesh_filepath = Path(mesh)
@@ -30,11 +30,11 @@ def main(mesh: str | None = None, spheres: str | None = None, level: int = 1):
         with open(sphere_filepath, 'r') as json_file:
             spherization = jsload(json_file, cls = SphereDecoder)
 
-        if level > len(spherization):
-            raise RuntimeError(f"Level {level} greater than available ({len(data)})!")
+        if depth > len(spherization):
+            raise RuntimeError(f"Depth {depth} greater than available ({len(data)})!")
 
         cm = mpl.colormaps['viridis']
-        for sphere in spherization[level].spheres:
+        for sphere in spherization[depth].spheres:
             sphere_mesh = icosphere(radius = sphere.radius)
             sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [100]
             scene.add_geometry(sphere_mesh, transform = translation_matrix(sphere.origin))
