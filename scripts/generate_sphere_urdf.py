@@ -67,6 +67,10 @@ def main(
         if 'mesh' in geometry:
             mesh = geometry['mesh']
             mesh_filename = mesh['@filename']
+
+            if mesh_filename.startswith('package://'):
+                mesh_filename = mesh_filename[len('package://'):]
+
             scale = np.array(mesh['@scale']) if 'scale' in mesh else None
 
             mesh_to_future[mesh_filename] = executor.submit(
@@ -91,6 +95,8 @@ def main(
         if 'mesh' in geometry:
             mesh = geometry['mesh']
             mesh_filename = mesh['@filename']
+            if mesh_filename.startswith('package://'):
+                mesh_filename = mesh_filename[len('package://'):]
 
             collision = []
             spherization = mesh_to_future[mesh_filename].result()
