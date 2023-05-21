@@ -1,3 +1,4 @@
+from sys import stdout
 from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
 
@@ -49,9 +50,9 @@ def main(
     with open(filename, 'r') as f:
         urdf = xmltodict.parse(f.read())
 
-    executor = ThreadPoolExecutor(max_workers = threads)
-    mesh_to_future = {}
+    meshes = {}
     for link in urdf['robot']['link']:
+        name = link['@name']
         if 'collision' not in link:
             continue
 
@@ -72,21 +73,21 @@ def main(
                 mesh_filename = mesh_filename[len('package://'):]
 
             scale = np.array(mesh['@scale']) if 'scale' in mesh else None
+            meshes[name] = (mesh_filename, scale, position, orientation)
 
-            mesh_to_future[mesh_filename] = executor.submit(
-                generate_spheres,
-                path / mesh_filename,
-                scale,
-                position,
-                orientation,
-                depth,
-                branch,
-                manifold_leaves
-                )
+    executor = ThreadPoolExecutor(max_workers = threads)
+    link_to_futures = {}
 
-    wait(mesh_to_future.values())
+    print(f"Computing spherization for {len(meshes)} meshes...")
+    for link, (mesh, scale, position, orientation) in meshes.items():
+        link_to_futures[link] = executor.submit(
+            generate_spheres, path / mesh, scale, position, orientation, depth, branch, manifold_leaves
+            )
+
+    wait(link_to_futures.values())
 
     for link in urdf['robot']['link']:
+        name = link['@name']
         if 'collision' not in link:
             continue
 
@@ -99,7 +100,7 @@ def main(
                 mesh_filename = mesh_filename[len('package://'):]
 
             collision = []
-            spherization = mesh_to_future[mesh_filename].result()
+            spherization = link_to_futures[name].result()
             for sphere in spherization.spheres:
                 collision.append(
                     {

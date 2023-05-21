@@ -1,7 +1,7 @@
 from sys import stdout
 from pathlib import Path
 from os import remove as remove_file
-from subprocess import run as run_subprocess
+from subprocess import run, DEVNULL
 
 from trimesh.exchange.obj import export_obj
 from trimesh.base import Trimesh
@@ -54,8 +54,7 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str]) -> list[Spherizati
         input_mesh.flush()
 
         output_file = input_path.parent / (input_path.stem + '-medial.sph')
-        # with RedirectStream(stdout):
-        run_subprocess(command + [str(input_path)])
+        run(command + [str(input_path)], stdout = DEVNULL)
 
     if not output_file.exists():
         raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
@@ -134,16 +133,16 @@ def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> 
         input_mesh.flush()
 
         with tempmesh() as (_, output_path):
-            # with RedirectStream(stdout):
-            run_subprocess(
-                    [
-                        str(SIMPLIFY_PATH),
-                        str(input_path),
-                        str(output_path),
-                        str(ratio),
-                        str(aggressiveness),
-                        ]
-                    )
+            run(
+                [
+                    str(SIMPLIFY_PATH),
+                    str(input_path),
+                    str(output_path),
+                    str(ratio),
+                    str(aggressiveness),
+                    ],
+                stdout = DEVNULL
+                )
 
             return load_mesh_file(output_path)
 
@@ -154,18 +153,18 @@ def simplify_manifold(mesh: Trimesh, ratio: float = 0.5) -> Trimesh:
         input_mesh.flush()
 
         with tempmesh() as (_, output_path):
-            # with RedirectStream(stdout):
-            run_subprocess(
-                    [
-                        str(SIMPLIFY_OLD_PATH),
-                        '-i',
-                        str(input_path),
-                        '-o',
-                        str(output_path),
-                        '-r',
-                        str(ratio),
-                        ]
-                    )
+            run(
+                [
+                    str(SIMPLIFY_OLD_PATH),
+                    '-i',
+                    str(input_path),
+                    '-o',
+                    str(output_path),
+                    '-r',
+                    str(ratio),
+                    ],
+                stdout = DEVNULL
+                )
 
             return load_mesh_file(output_path)
 
@@ -177,8 +176,7 @@ def manifold(mesh: Trimesh, leaves: int = 1000) -> Trimesh:
         input_mesh.flush()
 
         with tempmesh() as (_, output_path):
-            # with RedirectStream(stdout):
-            run_subprocess([str(MANIFOLD_OLD_PATH), str(input_path), str(output_path), str(leaves)])
+            run([str(MANIFOLD_OLD_PATH), str(input_path), str(output_path), str(leaves)], stdout = DEVNULL)
             return load_mesh_file(output_path)
 
 
@@ -189,17 +187,17 @@ def manifold_plus(mesh: Trimesh, depth: int = 8) -> Trimesh:
         input_mesh.flush()
 
         with tempmesh() as (_, output_path):
-            # with RedirectStream(stdout):
-            run_subprocess(
-                    [
-                        str(MANIFOLD_OLD_PATH),
-                        '--input',
-                        str(input_path),
-                        '--output',
-                        str(output_path),
-                        '--depth',
-                        str(depth)
-                        ]
-                    )
+            run(
+                [
+                    str(MANIFOLD_OLD_PATH),
+                    '--input',
+                    str(input_path),
+                    '--output',
+                    str(output_path),
+                    '--depth',
+                    str(depth)
+                    ],
+                stdout = DEVNULL
+                )
 
             return load_mesh_file(output_path)
