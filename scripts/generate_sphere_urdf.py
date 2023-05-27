@@ -1,4 +1,3 @@
-from sys import stdout
 from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
 
