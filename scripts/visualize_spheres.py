@@ -12,15 +12,11 @@ from foam import *
 
 
 def main(mesh: str, spheres: str | None = None, depth: int = 1):
-    scene = Scene()
-    if mesh:
-        mesh_filepath = Path(mesh)
-        if not mesh_filepath.exists:
-            raise RuntimeError(f"Path {mesh} does not exist!")
+    mesh_filepath = Path(mesh)
+    if not mesh_filepath.exists:
+        raise RuntimeError(f"Path {mesh} does not exist!")
 
-        loaded_mesh = as_mesh(load_mesh(mesh_filepath, process = False)) # type: ignore
-
-        scene.add_geometry(loaded_mesh)
+    scene = Scene([load_mesh_file(mesh_filepath)])
 
     if spheres:
         sphere_filepath = Path(spheres)
@@ -39,8 +35,7 @@ def main(mesh: str, spheres: str | None = None, depth: int = 1):
             sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [100]
             scene.add_geometry(sphere_mesh, transform = translation_matrix(sphere.origin))
 
-    if mesh or spheres:
-        SceneViewer(scene)
+    SceneViewer(scene)
 
 
 if __name__ == "__main__":

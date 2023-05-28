@@ -17,10 +17,8 @@ def main(
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
 
-    loaded_mesh = load_mesh_file(mesh_filepath)
-
     spheres = spherize_mesh(
-        loaded_mesh,
+        mesh_filepath,
         spherization_kwargs = {
             'depth': depth,
             'branch': branch,

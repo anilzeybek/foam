@@ -18,6 +18,20 @@ class Sphere:
         self.radius = r
 
 
+@dataclass(slots = True)
+class Spherization:
+    spheres: list[Sphere]
+    mean_error: float
+    best_error: float
+    worst_error: float
+
+    def __len__(self) -> int:
+        return len(self.spheres)
+
+    def __lt__(self, other) -> bool:
+        return self.mean_error < other.mean_error and self.best_error < other.best_error and self.worst_error < other.worst_error
+
+
 class SphereEncoder(JSONEncoder):
 
     def default(self, obj):
@@ -47,14 +61,3 @@ class SphereDecoder(JSONDecoder):
             return Spherization(dct['spheres'], dct['mean'], dct['best'], dct['worst'])
 
         return dct
-
-
-@dataclass(slots = True)
-class Spherization:
-    spheres: list[Sphere]
-    mean_error: float
-    best_error: float
-    worst_error: float
-
-    def __len__(self):
-        return len(self.spheres)
