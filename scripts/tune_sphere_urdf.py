@@ -110,15 +110,7 @@ class URDFSpherizer:
         print(f"Evaluating URDF: {value}")
         return value
 
-    def sphereize_urdf(self, allocation: dict[str, int]) -> str:
-        for mesh in self.meshes:
-            branch = allocation[mesh.name]
-            if not self.db.exists(mesh.name, branch, 1):
-                self.ps.spherize_mesh(mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy,
-                                 {'depth': 1, 'branch': branch})
-
-        self.ps.wait()
-
+    def get_sphere_urdf(self, allocation: dict[str, int]) -> URDFDict:
         spheres = {}
         for mesh in self.meshes:
             branch = allocation[mesh.name]
@@ -132,34 +124,44 @@ class URDFSpherizer:
 
         sphere_urdf = deepcopy(self.urdf)
         set_urdf_spheres(sphere_urdf, spheres)
+        return sphere_urdf
+
+
+    def sphereize_urdf(self, allocation: dict[str, int]) -> str:
+        for mesh in self.meshes:
+            branch = allocation[mesh.name]
+            if not self.db.exists(mesh.name, branch, 1):
+                self.ps.spherize_mesh(mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy,
+                                 {'depth': 1, 'branch': branch})
+
+        self.ps.wait()
+
+        sphere_urdf = self.get_sphere_urdf(allocation)
         return xmltodict.unparse(sphere_urdf)
 
 def main(
         filename: str = "assets/panda/panda.urdf",
-        depth: int = 1,
-        maximum_spheres: int = 128,
+        database: str = "sphere_database.json",
+        output: str = "spherized.urdf",
+        n_spheres: int = 128,
         n_trials: int = 100,
-        manifold_leaves: int = 1000,
         threads: int = 8
     ):
     filepath = Path(filename)
 
-    model = URDFSpherizer(filepath)
+    model = URDFSpherizer(filepath, n_spheres = n_spheres, sphere_threads = threads, database = database)
 
-    # Scenario object specifying the optimization "environment"
-    scenario = Scenario(model.configspace, deterministic = True, n_trials = 10)
+    scenario = Scenario(model.configspace, deterministic = True, n_trials = n_trials)
 
-    # Now we use SMAC to find the best hyperparameters
     smac = HPOFacade(
         scenario,
-        model.train,   # We pass the target function here
-        overwrite =
-        True,          # Overrides any previous results that are found that are inconsistent with the meta-data
+        model.train,
+        overwrite = True
         )
 
     incumbent = smac.optimize()
-    print(model.configuration_to_nspheres(incumbent))
-
+    sphere_urdf = model.get_sphere_urdf(model.configuration_to_nspheres(incumbent))
+    save_urdf(sphere_urdf, Path(output))
 
 if __name__ == "__main__":
     Fire(main)
