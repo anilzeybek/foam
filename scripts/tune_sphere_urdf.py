@@ -1,30 +1,36 @@
-from collections.abc import Iterator
-from concurrent.futures import ThreadPoolExecutor, wait
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
 
+import numpy as np
 import xmltodict
+from ConfigSpace import Configuration, ConfigurationSpace, Float
 from fire import Fire
 from foam import *
-import numpy as np
-
-from smac import HyperparameterOptimizationFacade as HPOFacade
-from smac import RunHistory, Scenario
-from ConfigSpace import Configuration, ConfigurationSpace, Float
-
-from grapeshot.model.world import World
-from grapeshot.util.constants import ALL_NO_BASE_GROUP
-from grapeshot.simulators.pybullet import PyBulletSimulator
-from grapeshot.util.filesystem import tempfile
 from grapeshot.model.robot import process_srdf
+from grapeshot.model.world import World
+from grapeshot.simulators.pybullet import PyBulletSimulator
+from grapeshot.util.constants import ALL_NO_BASE_GROUP
+from grapeshot.util.filesystem import tempfile
+from grapeshot.model.environment import EnvironmentBuilder
 from grapeshot.util.random import RNG
+from smac import HyperparameterOptimizationFacade, Scenario
 
+
+def create_environment() -> EnvironmentBuilder:
+    builder = EnvironmentBuilder()
+    for i in range(10):
+        position = RNG.uniform(low = np.array([-1, -1, -1]), high = np.array([1, 1, 1]), size = (3, ))
+        builder.sphere(f"s{i}", position = position)
+
+    return builder
 
 def evaluate_urdf(old_urdf: Path, urdf_str: str, seed: int = 0, samples: int = 100) -> float:
+    builder = create_environment()
+
     # TODO: set seed on RNG
     exact_world = World(PyBulletSimulator(False))
     exact_skel = exact_world.add_skeleton(old_urdf)
+    exact_world.add_environment_builder(builder)
     exact_groups = process_srdf(exact_skel, old_urdf.parent / (old_urdf.stem + ".srdf"))
 
     sphere_world = World(PyBulletSimulator(False))
@@ -34,6 +40,8 @@ def evaluate_urdf(old_urdf: Path, urdf_str: str, seed: int = 0, samples: int = 1
         sphere_skel = sphere_world.add_skeleton(path)
         _ = process_srdf(sphere_skel, old_urdf.parent / (old_urdf.stem + ".srdf"))
 
+    sphere_world.add_environment_builder(builder)
+
     exact_world.setup_collision_filter()
     sphere_world.setup_collision_filter()
 
@@ -41,7 +49,7 @@ def evaluate_urdf(old_urdf: Path, urdf_str: str, seed: int = 0, samples: int = 1
 
     exacts = []
     spheres = []
-    for i in range(samples):
+    for _ in range(samples):
         sample = group.sample_uniform()
         exact_world.set_group_positions(group, sample)
         sphere_world.set_group_positions(group, sample)
@@ -50,12 +58,18 @@ def evaluate_urdf(old_urdf: Path, urdf_str: str, seed: int = 0, samples: int = 1
         spheres.append(min(sphere_world.get_closest_points()).distance)
 
     norm = np.linalg.norm(np.array(exacts) - np.array(spheres))
-    print(norm)
-    return norm
+    return float(norm)
+
 
 class URDFSpherizer:
 
-    def __init__(self, filename: Path, n_spheres: int = 64, sphere_threads: int = 4, database: str = "sphere_database.json"):
+    def __init__(
+            self,
+            filename: Path,
+            n_spheres: int = 64,
+            sphere_threads: int = 4,
+            database: str = "sphere_database.json"
+        ):
         self.filename = filename
         self.path = filename.parent
         self.n_spheres = n_spheres
@@ -81,7 +95,6 @@ class URDFSpherizer:
             parameters.append(Float(f"{name}", (1. / len(links), 1), default = 1.))
 
         cs.add_hyperparameters(parameters)
-
         return cs
 
     def configuration_to_nspheres(self, config: Configuration) -> dict[str, int]:
@@ -126,24 +139,27 @@ class URDFSpherizer:
         set_urdf_spheres(sphere_urdf, spheres)
         return sphere_urdf
 
-
     def sphereize_urdf(self, allocation: dict[str, int]) -> str:
         for mesh in self.meshes:
             branch = allocation[mesh.name]
             if not self.db.exists(mesh.name, branch, 1):
-                self.ps.spherize_mesh(mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy,
-                                 {'depth': 1, 'branch': branch})
+                self.ps.spherize_mesh(
+                    mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy, {
+                        'depth': 1, 'branch': branch
+                        }
+                    )
 
         self.ps.wait()
 
         sphere_urdf = self.get_sphere_urdf(allocation)
         return xmltodict.unparse(sphere_urdf)
 
+
 def main(
         filename: str = "assets/panda/panda.urdf",
         database: str = "sphere_database.json",
         output: str = "spherized.urdf",
-        n_spheres: int = 128,
+        n_spheres: int = 64,
         n_trials: int = 100,
         threads: int = 8
     ):
@@ -151,17 +167,20 @@ def main(
 
     model = URDFSpherizer(filepath, n_spheres = n_spheres, sphere_threads = threads, database = database)
 
-    scenario = Scenario(model.configspace, deterministic = True, n_trials = n_trials)
+    scenario = Scenario(model.configspace, n_trials = n_trials)
 
-    smac = HPOFacade(
-        scenario,
-        model.train,
-        overwrite = True
-        )
+    smac = HyperparameterOptimizationFacade(scenario, model.train, overwrite = True)
 
     incumbent = smac.optimize()
-    sphere_urdf = model.get_sphere_urdf(model.configuration_to_nspheres(incumbent))
+
+    allocation = model.configuration_to_nspheres(incumbent)
+    print("Final Spherization:")
+    for k, v in allocation.items():
+        print(f"  {k}: {v}")
+
+    sphere_urdf = model.get_sphere_urdf(allocation)
     save_urdf(sphere_urdf, Path(output))
+
 
 if __name__ == "__main__":
     Fire(main)
