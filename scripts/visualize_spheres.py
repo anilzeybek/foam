@@ -1,12 +1,12 @@
+import random
 from json import load as jsload
 
-import random
+import matplotlib as mpl
 from fire import Fire
 from trimesh.creation import icosphere
 from trimesh.exchange.load import load_mesh
 from trimesh.transformations import translation_matrix
 from trimesh.viewer import SceneViewer
-import matplotlib as mpl
 
 from foam import *
 

@@ -2,6 +2,7 @@ from json import dumps
 from pathlib import Path
 
 from fire import Fire
+
 from foam import *
 
 

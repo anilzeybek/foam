@@ -5,7 +5,6 @@ import numpy as np
 import xmltodict
 from ConfigSpace import Configuration, ConfigurationSpace, Integer
 from fire import Fire
-from foam import *
 from grapeshot.model.robot import process_srdf
 from grapeshot.model.world import World
 from grapeshot.simulators.pybullet import PyBulletSimulator
@@ -13,6 +12,8 @@ from grapeshot.util.constants import ALL_NO_BASE_GROUP
 from grapeshot.util.filesystem import tempfile
 from grapeshot.util.random import set_RNG_seed
 from smac import HyperparameterOptimizationFacade, Scenario
+
+from foam import *
 
 
 class URDFSpherizer:

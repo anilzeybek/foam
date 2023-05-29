@@ -1,10 +1,8 @@
-from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
 
-import xmltodict
 from fire import Fire
+
 from foam import *
-from numpy import fromiter
 
 
 def main(
