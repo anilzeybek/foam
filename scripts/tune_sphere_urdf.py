@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import xmltodict
-from ConfigSpace import Configuration, ConfigurationSpace, Float
+from ConfigSpace import Configuration, ConfigurationSpace, Integer
 from fire import Fire
 from foam import *
 from grapeshot.model.robot import process_srdf
@@ -11,54 +11,8 @@ from grapeshot.model.world import World
 from grapeshot.simulators.pybullet import PyBulletSimulator
 from grapeshot.util.constants import ALL_NO_BASE_GROUP
 from grapeshot.util.filesystem import tempfile
-from grapeshot.model.environment import EnvironmentBuilder
-from grapeshot.util.random import RNG
+from grapeshot.util.random import set_RNG_seed
 from smac import HyperparameterOptimizationFacade, Scenario
-
-
-def create_environment() -> EnvironmentBuilder:
-    builder = EnvironmentBuilder()
-    for i in range(10):
-        position = RNG.uniform(low = np.array([-1, -1, -1]), high = np.array([1, 1, 1]), size = (3, ))
-        builder.sphere(f"s{i}", position = position)
-
-    return builder
-
-def evaluate_urdf(old_urdf: Path, urdf_str: str, seed: int = 0, samples: int = 100) -> float:
-    builder = create_environment()
-
-    # TODO: set seed on RNG
-    exact_world = World(PyBulletSimulator(False))
-    exact_skel = exact_world.add_skeleton(old_urdf)
-    exact_world.add_environment_builder(builder)
-    exact_groups = process_srdf(exact_skel, old_urdf.parent / (old_urdf.stem + ".srdf"))
-
-    sphere_world = World(PyBulletSimulator(False))
-    with tempfile(old_urdf.parent, extension = "urdf") as (f, path):
-        f.write(urdf_str)
-        f.flush()
-        sphere_skel = sphere_world.add_skeleton(path)
-        _ = process_srdf(sphere_skel, old_urdf.parent / (old_urdf.stem + ".srdf"))
-
-    sphere_world.add_environment_builder(builder)
-
-    exact_world.setup_collision_filter()
-    sphere_world.setup_collision_filter()
-
-    group = exact_groups[ALL_NO_BASE_GROUP]
-
-    exacts = []
-    spheres = []
-    for _ in range(samples):
-        sample = group.sample_uniform()
-        exact_world.set_group_positions(group, sample)
-        sphere_world.set_group_positions(group, sample)
-
-        exacts.append(min(exact_world.get_closest_points()).distance)
-        spheres.append(min(sphere_world.get_closest_points()).distance)
-
-    norm = np.linalg.norm(np.array(exacts) - np.array(spheres))
-    return float(norm)
 
 
 class URDFSpherizer:
@@ -67,6 +21,7 @@ class URDFSpherizer:
             self,
             filename: Path,
             n_spheres: int = 64,
+            n_samples: int = 1000,
             sphere_threads: int = 4,
             database: str = "sphere_database.json"
         ):
@@ -77,6 +32,42 @@ class URDFSpherizer:
         self.meshes = get_urdf_meshes(self.urdf)
         self.ps = ParallelSpherizer(sphere_threads)
         self.db = SpherizationDatabase(Path(database))
+
+        self.world = World(PyBulletSimulator(False))
+        self.skel = self.world.add_skeleton(self.filename)
+        self.groups = process_srdf(self.skel, self.path / (self.filename.stem + ".srdf"))
+        self.world.setup_collision_filter()
+        self.group = self.groups[ALL_NO_BASE_GROUP]
+
+        train_values = []
+        self.samples = []
+        for _ in range(n_samples):
+            sample = self.group.sample_uniform()
+            self.samples.append(sample)
+            self.world.set_group_positions(self.group, sample)
+            train_values.append(min(self.world.get_closest_points()).distance)
+        self.train_values = np.array(train_values)
+
+    def evaluate_urdf(self, urdf_str: str, seed: int = 0) -> float:
+        set_RNG_seed(seed)
+
+        sphere_world = World(PyBulletSimulator(False))
+        with tempfile(self.path, extension = "urdf") as (f, path):
+            f.write(urdf_str)
+            f.flush()
+
+            sphere_skel = sphere_world.add_skeleton(path)
+            process_srdf(sphere_skel, self.path / (self.filename.stem + ".srdf"))
+
+        sphere_world.setup_collision_filter()
+
+        spheres = []
+        for sample in self.samples:
+            sphere_world.set_group_positions(self.group, sample)
+            spheres.append(min(sphere_world.get_closest_points()).distance)
+
+        norm = np.linalg.norm(self.train_values - np.array(spheres))
+        return float(norm)
 
     @property
     def configspace(self) -> ConfigurationSpace:
@@ -92,23 +83,25 @@ class URDFSpherizer:
             links.append(name)
 
         for name in links:
-            parameters.append(Float(f"{name}", (1. / len(links), 1), default = 1.))
+            parameters.append(Integer(f"{name}", (1, self.n_spheres - len(links) + 1), default = 8))
 
         cs.add_hyperparameters(parameters)
         return cs
 
     def configuration_to_nspheres(self, config: Configuration) -> dict[str, int]:
+        # Uniform -> Exponential -> Dirichlet (uniform over simplex)
         weights = {}
         for link in self.urdf['robot']['link']:
             if 'collision' not in link:
                 continue
 
             name = link['@name']
-            weights[name] = config[name]
+            weights[name] = np.log(config[name] / 64.) / -len(config)
 
         s = sum(weights.values())
         for k, v in weights.items():
-            weights[k] = max(int(v / s * self.n_spheres), 1)
+            v = int(round(v / s * self.n_spheres))
+            weights[k] = max(v, 1)
 
         return weights
 
@@ -119,7 +112,7 @@ class URDFSpherizer:
         for k, v in weights.items():
             print(f"  {k}: {v}")
         urdf = self.sphereize_urdf(weights)
-        value = evaluate_urdf(self.filename, urdf)
+        value = self.evaluate_urdf(urdf, seed = seed)
         print(f"Evaluating URDF: {value}")
         return value
 
@@ -166,11 +159,8 @@ def main(
     filepath = Path(filename)
 
     model = URDFSpherizer(filepath, n_spheres = n_spheres, sphere_threads = threads, database = database)
-
-    scenario = Scenario(model.configspace, n_trials = n_trials)
-
+    scenario = Scenario(model.configspace, n_trials = n_trials, deterministic = True)
     smac = HyperparameterOptimizationFacade(scenario, model.train, overwrite = True)
-
     incumbent = smac.optimize()
 
     allocation = model.configuration_to_nspheres(incumbent)
