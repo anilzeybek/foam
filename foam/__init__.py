@@ -71,21 +71,24 @@ def spherize_mesh(
 
 
 class ParallelSpherizer:
+
     def __init__(self, threads: int = 4):
         self.executor = ThreadPoolExecutor(max_workers = threads)
         self.waiting = {}
 
-    def spherize_mesh(self,
-                      name: str,
-        mesh: Trimesh | Path,
-        scale: NDArray | None = None,
-        position: NDArray | None = None,
-        orientation: NDArray | None = None,
-        spherization_kwargs: dict[str, Any] = {},
-        process_kwargs: dict[str, Any] = {}
-    ) -> Future[list[Spherization]]:
+    def spherize_mesh(
+            self,
+            name: str,
+            mesh: Trimesh | Path,
+            scale: NDArray | None = None,
+            position: NDArray | None = None,
+            orientation: NDArray | None = None,
+            spherization_kwargs: dict[str, Any] = {},
+            process_kwargs: dict[str, Any] = {}
+        ) -> Future[list[Spherization]]:
         future = self.executor.submit(
-            spherize_mesh, mesh, scale, position, orientation, spherization_kwargs, process_kwargs)
+            spherize_mesh, mesh, scale, position, orientation, spherization_kwargs, process_kwargs
+            )
 
         self.waiting[name] = future
         return future
@@ -96,14 +99,26 @@ class ParallelSpherizer:
     def get(self, name: str) -> list[Spherization]:
         return self.waiting[name].result()
 
+
 class SpherizationDatabase:
+
     def __init__(self, path: Path):
         self.path = path
 
         if path.exists():
             with open(path, 'r') as json_file:
                 self.db = jsload(json_file, cls = SphereDecoder)
-                self.db = {mk : {int(bk): {int(dk): dv for dk, dv in bv.items()} for bk, bv in mv.items() } for mk, mv in self.db.items()}
+                self.db = {
+                    mk: {
+                        int(bk): {
+                            int(dk): dv
+                            for dk, dv in bv.items()
+                            }
+                        for bk, bv in mv.items()
+                        }
+                    for mk,
+                    mv in self.db.items()
+                    }
 
         else:
             self.db = {}

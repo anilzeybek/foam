@@ -16,14 +16,17 @@ import numpy as np
 
 import xmltodict
 
+
 def fix_mesh(mesh: Trimesh):
     fix_normals(mesh)
     fix_inversion(mesh)
     fix_winding(mesh)
     mesh.vertex_normals = -mesh.vertex_normals
 
+
 def smooth_mesh(mesh: Trimesh):
-    filter_humphrey(mesh, iterations=100)
+    filter_humphrey(mesh, iterations = 100)
+
 
 @contextmanager
 def tempmesh():
@@ -48,7 +51,7 @@ def as_mesh(scene_or_mesh: Trimesh | Scene) -> Trimesh | None:
 
 def load_mesh_file(mesh_filepath: Path) -> Trimesh:
     try:
-        mesh = as_mesh(load_mesh(mesh_filepath, process = False))   # type: ignore
+        mesh = as_mesh(load_mesh(mesh_filepath, process = False)) # type: ignore
         if mesh is None:
             raise RuntimeError("Failed to load mesh!")
 
@@ -57,18 +60,22 @@ def load_mesh_file(mesh_filepath: Path) -> Trimesh:
     except Exception as e:
         raise e
 
+
 @dataclass
 class URDFMesh:
-    name:str
+    name: str
     filepath: Path
     xyz: NDArray
     rpy: NDArray
     scale: NDArray
 
+
 URDFDict = dict[str, Any]
+
 
 def _urdf_array_to_np(array: str) -> NDArray:
     return np.fromiter(map(float, array.split()), dtype = float)
+
 
 def _urdf_clean_filename(filename: str) -> str:
     if filename.startswith('package://'):
@@ -76,13 +83,15 @@ def _urdf_clean_filename(filename: str) -> str:
 
     return filename
 
+
 def load_urdf(urdf_path: Path) -> URDFDict:
     with open(urdf_path, 'r') as f:
         xml = xmltodict.parse(f.read())
         xml['robot']['@path'] = urdf_path
         return xml
 
-def get_urdf_meshes(urdf:  URDFDict)-> list[URDFMesh]:
+
+def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
     urdf_dir = Path(urdf['robot']['@path']).parent
 
     meshes = []
@@ -110,6 +119,7 @@ def get_urdf_meshes(urdf:  URDFDict)-> list[URDFMesh]:
 
     return meshes
 
+
 def set_urdf_spheres(urdf: URDFDict, spheres):
     for link in urdf['robot']['link']:
         name = link['@name']
@@ -135,6 +145,7 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
                         }
                     )
                 link['collision'] = collision
+
 
 def save_urdf(urdf: URDFDict, filename: Path):
     with open(filename, 'w') as f:
