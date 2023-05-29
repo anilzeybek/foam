@@ -6,6 +6,7 @@ from fire import Fire
 from foam import *
 from numpy import fromiter
 
+
 def main(
         filename: str = "assets/panda/panda.urdf",
         output: str = "spherized.urdf",
@@ -13,6 +14,7 @@ def main(
         depth: int = 1,
         branch: int = 8,
         manifold_leaves: int = 1000,
+        simplification_ratio: float = 0.2,
         threads: int = 8
     ):
     ps = ParallelSpherizer(threads)
@@ -23,9 +25,21 @@ def main(
 
     for mesh in meshes:
         if not db.exists(mesh.name, branch, depth):
-            ps.spherize_mesh(mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy,
-                             {'depth': depth, 'branch': branch},
-                             {'manifold_leaves': manifold_leaves, 'ratio': 0.2})
+            ps.spherize_mesh(
+                mesh.name,
+                mesh.filepath,
+                mesh.scale,
+                mesh.xyz,
+                mesh.rpy,
+                {
+                    'depth': depth,
+                    'branch': branch,
+                    },
+                {
+                    'manifold_leaves': manifold_leaves,
+                    'ratio': simplification_ratio,
+                    },
+                )
 
     ps.wait()
 
@@ -43,6 +57,7 @@ def main(
 
     set_urdf_spheres(urdf, spheres)
     save_urdf(urdf, Path(output))
+
 
 if __name__ == "__main__":
     Fire(main)
