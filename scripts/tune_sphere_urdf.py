@@ -31,14 +31,14 @@ class URDFSpherizer:
         self.n_spheres = n_spheres
         self.urdf = load_urdf(filename)
         self.meshes = get_urdf_meshes(self.urdf)
-        self.ps = ParallelSpherizer(sphere_threads)
-        self.db = SpherizationDatabase(Path(database))
+        self.sh = SpherizationHelper(Path(database), sphere_threads)
 
         self.world = World(PyBulletSimulator(False))
         self.skel = self.world.add_skeleton(self.filename)
         self.groups = process_srdf(self.skel, self.path / (self.filename.stem + ".srdf"))
         self.world.setup_collision_filter()
         self.group = self.groups[ALL_NO_BASE_GROUP]
+        self.links = [link['@name'] for link in self.urdf['robot']['link'] if 'collision' in link]
 
         train_values = []
         self.samples = []
@@ -47,6 +47,7 @@ class URDFSpherizer:
             self.samples.append(sample)
             self.world.set_group_positions(self.group, sample)
             train_values.append(min(self.world.get_closest_points()).distance)
+
         self.train_values = np.array(train_values)
 
     def evaluate_urdf(self, urdf_str: str, seed: int = 0) -> float:
@@ -73,80 +74,52 @@ class URDFSpherizer:
     @property
     def configspace(self) -> ConfigurationSpace:
         cs = ConfigurationSpace(seed = 0)
-        parameters = []
-
-        links = []
-        for link in self.urdf['robot']['link']:
-            if 'collision' not in link:
-                continue
-
-            name = link['@name']
-            links.append(name)
-
-        for name in links:
-            parameters.append(Integer(f"{name}", (1, self.n_spheres - len(links) + 1), default = 8))
-
-        cs.add_hyperparameters(parameters)
+        cs.add_hyperparameters(
+            [
+                Integer(f"{name}", (1, self.n_spheres - len(self.links) + 1), default = 8)
+                for name in self.links
+                ]
+            )
         return cs
 
     def configuration_to_nspheres(self, config: Configuration) -> dict[str, int]:
         # Uniform -> Exponential -> Dirichlet (uniform over simplex)
-        weights = {}
-        for link in self.urdf['robot']['link']:
-            if 'collision' not in link:
-                continue
-
-            name = link['@name']
-            weights[name] = np.log(config[name] / 64.) / -len(config)
+        weights = {name: np.log(config[name] / 64.) / -len(config) for name in self.links}
 
         s = sum(weights.values())
         for k, v in weights.items():
-            v = int(round(v / s * self.n_spheres))
-            weights[k] = max(v, 1)
+            weights[k] = max(int(round(v / s * self.n_spheres)), 1)
 
         return weights
 
     def train(self, config: Configuration, seed: int = 0) -> float:
         weights = self.configuration_to_nspheres(config)
 
+        for mesh in self.meshes:
+            self.sh.spherize_mesh(
+                mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy, 1, weights[mesh.name]
+                )
+
+        sphere_urdf = self.get_sphere_urdf(weights)
+        urdf = xmltodict.unparse(sphere_urdf)
+        value = self.evaluate_urdf(urdf, seed = seed)
+
         print(f"Spherizing URDF")
         for k, v in weights.items():
             print(f"  {k}: {v}")
-        urdf = self.sphereize_urdf(weights)
-        value = self.evaluate_urdf(urdf, seed = seed)
         print(f"Evaluating URDF: {value}")
+        print()
+
         return value
 
     def get_sphere_urdf(self, allocation: dict[str, int]) -> URDFDict:
-        spheres = {}
-        for mesh in self.meshes:
-            branch = allocation[mesh.name]
-            if not self.db.exists(mesh.name, branch, 1):
-                spherization = self.ps.get(mesh.name)
-                self.db.add(mesh.name, branch, 1, spherization[-1])
-                spheres[mesh.name] = spherization[-1]
-
-            else:
-                spheres[mesh.name] = self.db.get(mesh.name, branch, 1)
-
+        spheres = {
+            mesh.name: self.sh.get_spherization(mesh.name, 1, allocation[mesh.name])
+            for mesh in self.meshes
+            }
         sphere_urdf = deepcopy(self.urdf)
         set_urdf_spheres(sphere_urdf, spheres)
         return sphere_urdf
-
-    def sphereize_urdf(self, allocation: dict[str, int]) -> str:
-        for mesh in self.meshes:
-            branch = allocation[mesh.name]
-            if not self.db.exists(mesh.name, branch, 1):
-                self.ps.spherize_mesh(
-                    mesh.name, mesh.filepath, mesh.scale, mesh.xyz, mesh.rpy, {
-                        'depth': 1, 'branch': branch
-                        }
-                    )
-
-        self.ps.wait()
-
-        sphere_urdf = self.get_sphere_urdf(allocation)
-        return xmltodict.unparse(sphere_urdf)
 
 
 def main(

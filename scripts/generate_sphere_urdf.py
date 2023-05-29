@@ -15,44 +15,26 @@ def main(
         simplification_ratio: float = 0.2,
         threads: int = 8
     ):
-    ps = ParallelSpherizer(threads)
-    db = SpherizationDatabase(Path(database))
+
+    sh = SpherizationHelper(Path(database), threads)
 
     urdf = load_urdf(Path(filename))
     meshes = get_urdf_meshes(urdf)
 
     for mesh in meshes:
-        if not db.exists(mesh.name, branch, depth):
-            ps.spherize_mesh(
-                mesh.name,
-                mesh.filepath,
-                mesh.scale,
-                mesh.xyz,
-                mesh.rpy,
-                {
-                    'depth': depth,
-                    'branch': branch,
-                    },
-                {
-                    'manifold_leaves': manifold_leaves,
-                    'ratio': simplification_ratio,
-                    },
-                )
+        sh.spherize_mesh(
+            mesh.name,
+            mesh.filepath,
+            mesh.scale,
+            mesh.xyz,
+            mesh.rpy,
+            depth,
+            branch,
+            manifold_leaves,
+            simplification_ratio,
+            )
 
-    ps.wait()
-
-    spheres = {}
-    for mesh in meshes:
-        if not db.exists(mesh.name, branch, depth):
-            spherization = ps.get(mesh.name)
-            for level, sphere_level in enumerate(spherization):
-                db.add(mesh.name, branch, level, sphere_level)
-
-            spheres[mesh.name] = spherization[-1]
-
-        else:
-            spheres[mesh.name] = db.get(mesh.name, branch, depth)
-
+    spheres = {mesh.name: sh.get_spherization(mesh.name, branch, depth) for mesh in meshes}
     set_urdf_spheres(urdf, spheres)
     save_urdf(urdf, Path(output))
 

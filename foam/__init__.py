@@ -151,3 +151,50 @@ class SpherizationDatabase:
                     return True
 
         return False
+
+
+class SpherizationHelper:
+
+    def __init__(self, database: Path, threads: int = 8):
+        self.ps = ParallelSpherizer(threads)
+        self.db = SpherizationDatabase(database)
+
+    def spherize_mesh(
+            self,
+            name: str,
+            mesh: Trimesh | Path,
+            scale: NDArray | None = None,
+            position: NDArray | None = None,
+            orientation: NDArray | None = None,
+            depth: int = 1,
+            branch: int = 8,
+            manifold_leaves: int = 1000,
+            simplification_ratio: float = 0.2
+        ):
+        if not self.db.exists(name, branch, depth):
+            self.ps.spherize_mesh(
+                name,
+                mesh,
+                scale,
+                position,
+                orientation,
+                {
+                    'depth': depth,
+                    'branch': branch,
+                    },
+                {
+                    'manifold_leaves': manifold_leaves,
+                    'ratio': simplification_ratio,
+                    },
+                )
+
+    def get_spherization(self, name: str, depth: int = 1, branch: int = 8) -> Spherization:
+        if not self.db.exists(name, branch, depth):
+            spherization = self.ps.get(name)
+            for level, sphere_level in enumerate(spherization):
+                self.db.add(name, branch, level, sphere_level)
+
+            return spherization[depth]
+
+        else:
+            return self.db.get(name, branch, depth)
