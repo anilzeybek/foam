@@ -8,7 +8,7 @@ from .utility import *
 from .external import *
 from .model import *
 
-from trimesh.transformations import euler_matrix, translation_matrix, quaternion_matrix
+from trimesh.transformations import compose_matrix, euler_matrix, translation_matrix, quaternion_matrix
 
 
 def smooth_manifold(mesh: Trimesh, manifold_leaves: int = 1000, ratio = 0.2) -> Trimesh:
@@ -35,17 +35,8 @@ def spherize_mesh(
 
     loaded_mesh = loaded_mesh.copy()
 
-    if position is not None:
-        loaded_mesh.apply_transform(translation_matrix(position))
-
-    if orientation is not None:
-        if len(orientation) == 3:
-            tf = euler_matrix(*orientation, 'rxyz') # type: ignore
-        elif len(orientation) == 4:
-            tf = quaternion_matrix(*orientation)
-        else:
-            raise ValueError("Invalid orientation.")
-
+    if position is not None or orientation is not None:
+        tf = compose_matrix(angles=orientation, translate=position)
         loaded_mesh.apply_transform(tf)
 
     if scale is not None:
@@ -188,11 +179,12 @@ class SpherizationHelper:
                     },
                 )
 
-    def get_spherization(self, name: str, depth: int = 1, branch: int = 8) -> Spherization:
+    def get_spherization(self, name: str, depth: int = 1, branch: int = 8, cache: bool = True) -> Spherization:
         if not self.db.exists(name, branch, depth):
             spherization = self.ps.get(name)
-            for level, sphere_level in enumerate(spherization):
-                self.db.add(name, branch, level, sphere_level)
+            if cache:
+                for level, sphere_level in enumerate(spherization):
+                    self.db.add(name, branch, level, sphere_level)
 
             return spherization[depth]
 

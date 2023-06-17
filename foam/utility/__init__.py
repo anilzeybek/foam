@@ -11,6 +11,7 @@ from trimesh.util import concatenate
 from trimesh.exchange.load import load_mesh
 from trimesh.repair import *
 from trimesh.smoothing import filter_humphrey, filter_taubin
+from trimesh.primitives import Box, Cylinder
 
 import numpy as np
 
@@ -70,6 +71,14 @@ class URDFMesh:
     scale: NDArray
 
 
+@dataclass
+class URDFPrimitive:
+    name: str
+    mesh: Trimesh
+    xyz: NDArray
+    rpy: NDArray
+
+
 URDFDict = dict[str, Any]
 
 
@@ -89,6 +98,31 @@ def load_urdf(urdf_path: Path) -> URDFDict:
         xml = xmltodict.parse(f.read())
         xml['robot']['@path'] = urdf_path
         return xml
+
+
+def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
+    primitives = []
+    for link in urdf['robot']['link']:
+        name = link['@name']
+        if 'collision' not in link:
+            continue
+
+        # TODO: Assumes one collision geometry right now
+        collision = link['collision']
+        if 'origin' in collision:
+            xyz = _urdf_array_to_np(collision['origin']['@xyz'])
+            rpy = _urdf_array_to_np(collision['origin']['@rpy'])
+        else:
+            xyz = np.array([0., 0., 0.])
+            rpy = np.array([0., 0., 0.])
+
+        geometry = collision['geometry']
+        if 'box' in geometry:
+            box = geometry['box']
+            size = _urdf_array_to_np(box['@size'])
+            primitives.append(URDFPrimitive(name, Box(size), xyz, rpy))
+
+    return primitives
 
 
 def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
@@ -127,8 +161,7 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
             continue
 
         # TODO: Assumes one collision geometry right now
-        geometry = link['collision']['geometry']
-        if 'mesh' in geometry:
+        if name in spheres:
             collision = []
             spherization = spheres[name]
             for sphere in spherization.spheres:

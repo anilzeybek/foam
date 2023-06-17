@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="" version="1.0">
+	<link name="_builder_root_link">
+	</link>
+	<link name="Cube1">
+		<visual>
+			<geometry>
+				<box size="0.07 0.07 0.07"/>
+			</geometry>
+			<origin xyz="0.7444402652852363 -0.1411031622851692 0.2599367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.45 0.8199499438516796 0.9 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.07 0.07 0.07"/>
+			</geometry>
+			<origin xyz="0.7444402652852363 -0.1411031622851692 0.2599367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="base">
+		<visual>
+			<geometry>
+				<box size="0.7 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.7444402652852363 -0.1411031622851692 0.1799367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.6824567093281075 0.45 0.9 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.7 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.7444402652852363 -0.1411031622851692 0.1799367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_back">
+		<visual>
+			<geometry>
+				<box size="0.04 0.7 0.7"/>
+			</geometry>
+			<origin xyz="1.093322261153294 -0.1690558537319761 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.8274816513061524 0.9 0.45 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.04 0.7 0.7"/>
+			</geometry>
+			<origin xyz="1.093322261153294 -0.1690558537319761 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_cap">
+		<visual>
+			<geometry>
+				<box size="0.65 0.65 0.04"/>
+			</geometry>
+			<origin xyz="0.7942805504092445 -0.1450964039204273 0.8899367587044525" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.45 0.9 0.7151290718000383 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.65 0.65 0.04"/>
+			</geometry>
+			<origin xyz="0.7942805504092445 -0.1450964039204273 0.8899367587044525" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_frontA">
+		<visual>
+			<geometry>
+				<box size="0.04 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.3955582694171783 -0.1131504708383623 0.3399367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.45 0.9 0.5160225099418313 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.04 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.3955582694171783 -0.1131504708383623 0.3399367587044526" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_frontB">
+		<visual>
+			<geometry>
+				<box size="0.04 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.3955582694171783 -0.1131504708383623 0.6399367587044525" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.7026262155734003 0.45 0.9 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.04 0.7 0.04"/>
+			</geometry>
+			<origin xyz="0.3955582694171783 -0.1131504708383623 0.6399367587044525" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_left">
+		<visual>
+			<geometry>
+				<box size="0.7 0.04 0.7"/>
+			</geometry>
+			<origin xyz="0.7164875738384294 -0.4899851581532272 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.9 0.8522551299305633 0.45 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.7 0.04 0.7"/>
+			</geometry>
+			<origin xyz="0.7164875738384294 -0.4899851581532272 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<link name="side_right">
+		<visual>
+			<geometry>
+				<box size="0.7 0.04 0.7"/>
+			</geometry>
+			<origin xyz="0.7723929567320432 0.2077788335828888 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+			<material name="">
+				<color rgba="0.9 0.5783578998874873 0.45 1.0"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.7 0.04 0.7"/>
+			</geometry>
+			<origin xyz="0.7723929567320432 0.2077788335828888 0.5399367587044527" rpy="0.0 0.0 -0.07994997885362974"/>
+		</collision>
+	</link>
+	<joint name="Cube1_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="Cube1"/>
+	</joint>
+	<joint name="base_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="base"/>
+	</joint>
+	<joint name="side_back_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_back"/>
+	</joint>
+	<joint name="side_cap_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_cap"/>
+	</joint>
+	<joint name="side_frontA_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_frontA"/>
+	</joint>
+	<joint name="side_frontB_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_frontB"/>
+	</joint>
+	<joint name="side_left_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_left"/>
+	</joint>
+	<joint name="side_right_joint" type="fixed">
+		<parent link="_builder_root_link"/>
+		<child link="side_right"/>
+	</joint>
+</robot>

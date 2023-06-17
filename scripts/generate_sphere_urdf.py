@@ -11,6 +11,8 @@ def main(
         database: str = "sphere_database.json",
         depth: int = 1,
         branch: int = 8,
+        use_volume_heuristic: bool = True,
+        volume_heuristic_ratio: float = 0.7,
         manifold_leaves: int = 1000,
         simplification_ratio: float = 0.2,
         threads: int = 8
@@ -34,8 +36,28 @@ def main(
             simplification_ratio,
             )
 
-    spheres = {mesh.name: sh.get_spherization(mesh.name, branch, depth) for mesh in meshes}
-    set_urdf_spheres(urdf, spheres)
+    primitives = get_urdf_primitives(urdf)
+    for primitive in primitives:
+        sh.spherize_mesh(
+            primitive.name,
+            primitive.mesh,
+            np.array([1., 1., 1.]),
+            primitive.xyz,
+            primitive.rpy,
+            depth,
+            max(int(primitive.mesh.volume * 10000 *
+                    volume_heuristic_ratio), branch) if use_volume_heuristic else branch,
+            manifold_leaves,
+            simplification_ratio,
+            )
+
+    mesh_spheres = {mesh.name: sh.get_spherization(mesh.name, depth, branch) for mesh in meshes}
+    primitive_spheres = {
+        primitive.name: sh.get_spherization(primitive.name, depth, branch, cache = False)
+        for primitive in primitives
+        }
+
+    set_urdf_spheres(urdf, mesh_spheres | primitive_spheres)
     save_urdf(urdf, Path(output))
 
 
