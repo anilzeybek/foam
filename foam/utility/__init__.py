@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -152,6 +153,31 @@ def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
             meshes.append(URDFMesh(name, urdf_dir / filename, xyz, rpy, scale))
 
     return meshes
+
+def get_urdf_spheres(urdf: URDFDict) -> Iterator[tuple[float, float, float, float]]:
+    primitives = []
+    for link in urdf['robot']['link']:
+        name = link['@name']
+        if 'collision' not in link:
+            continue
+
+        if not isinstance(link['collision'], list):
+            link['collision'] = [link['collision']]
+
+        for collision in link['collision']:
+
+            if 'origin' in collision:
+                xyz = _urdf_array_to_np(collision['origin']['@xyz'])
+                rpy = _urdf_array_to_np(collision['origin']['@rpy'])
+            else:
+                xyz = np.array([0., 0., 0.])
+                rpy = np.array([0., 0., 0.])
+
+            geometry = collision['geometry']
+            if 'sphere' in geometry:
+                sphere = geometry['sphere']
+                radius = float(sphere['@radius'])
+                yield *xyz.tolist(), radius
 
 
 def set_urdf_spheres(urdf: URDFDict, spheres):

@@ -7,7 +7,7 @@ from ConfigSpace import Configuration, ConfigurationSpace, Integer
 from fire import Fire
 from grapeshot.model.robot import process_srdf
 from grapeshot.model.world import World
-from grapeshot.model.environment import EnvironmentBuilder
+from grapeshot.model.environment import process_environment_yaml
 from grapeshot.simulators.pybullet import PyBulletSimulator
 from grapeshot.util.constants import ALL_NO_BASE_GROUP
 from grapeshot.util.filesystem import tempfile
@@ -22,6 +22,8 @@ class GrapeshotHelper:
     def __init__(self, urdf: Path, srdf: Path, links: list[str]):
         self.world = World(PyBulletSimulator(False))
         self.skel = self.world.add_skeleton(urdf)
+        _ = self.world.add_environment_builder(process_environment_yaml('./assets/spheres_scene.yaml'))
+
         self.groups = process_srdf(self.skel, srdf)
         self.group = self.groups[ALL_NO_BASE_GROUP]
         self.links = [self.skel.get_link(name) for name in links]
@@ -140,9 +142,9 @@ def main(
         filename: str = "assets/panda/panda.urdf",
         database: str = "sphere_database.json",
         output: str = "spherized.urdf",
-        n_spheres: int = 64,
-        n_trials: int = 100,
-        n_samples: int = 100,
+        n_spheres: int = 50,
+        n_trials: int = 1000,
+        n_samples: int = 1000,
         threads: int = 8
     ):
     filepath = Path(filename)

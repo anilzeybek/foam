@@ -1,0 +1,80 @@
+robot_state:
+  joint_state:
+    position: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    name: [panda_joint1, panda_joint2, panda_joint3, panda_joint4, panda_joint5, panda_joint6, panda_joint7, panda_finger_joint1, panda_finger_joint2]
+  multi_dof_joint_state:
+    twist: []
+    transforms: [{translation: [0, 0, 0], rotation: [0, 0, 0, 1]}]
+    joint_names: [virtual_joint]
+    wrench: []
+name: ""
+robot_model_name: panda
+world:
+  collision_objects:
+    - id: Sphere1
+      primitive_poses:
+        - position: [0.55, 0, 0.25]
+          orientation: [0, 0, 0, 1]
+        - position: [0.35, 0.35, 0.25]
+          orientation: [0, 0, 0, 1]
+        - position: [0, 0.55, 0.25]
+          orientation: [0, 0, 0, 1]
+        # - position: [-0.35, 0.35, 0.25]
+        #   orientation: [0, 0, 0, 1]
+        - position: [-0.55, 0, 0.25]
+          orientation: [0, 0, 0, 1]
+        - position: [-0.35, -0.35, 0.25]
+          orientation: [0, 0, 0, 1]
+        - position: [0, -0.55, 0.25]
+          orientation: [0, 0, 0, 1]
+        - position: [0.35, -0.35, 0.25]
+          orientation: [0, 0, 0, 1]
+        # - position: [0.55, 0, 0.8]
+        #   orientation: [0, 0, 0, 1]
+        - position: [0.35, 0.35, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [0, 0.55, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [-0.35, 0.35, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [-0.55, 0, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [-0.35, -0.35, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [0, -0.55, 0.8]
+          orientation: [0, 0, 0, 1]
+        - position: [0.35, -0.35, 0.8]
+          orientation: [0, 0, 0, 1]
+      primitives:
+        # - type: sphere
+        #   radius: 0.19
+        # - type: sphere
+        #   radius: 0.19
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
+        - type: sphere
+          radius: 0.20
