@@ -122,6 +122,11 @@ def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
             box = geometry['box']
             size = _urdf_array_to_np(box['@size'])
             primitives.append(URDFPrimitive(name, Box(size), xyz, rpy))
+        elif 'cylinder' in geometry:
+            cylinder = geometry['cylinder']
+            length = float(cylinder['@length'])
+            radius = float(cylinder['@radius'])
+            primitives.append(URDFPrimitive(name, Cylinder(radius, length), xyz, rpy))
 
     return primitives
 

@@ -11,11 +11,11 @@ def main(
         database: str = "sphere_database.json",
         depth: int = 1,
         branch: int = 8,
-        use_volume_heuristic: bool = True,
+        use_volume_heuristic: bool = False,
         volume_heuristic_ratio: float = 0.7,
         manifold_leaves: int = 1000,
         simplification_ratio: float = 0.2,
-        threads: int = 8
+        threads: int = 16
     ):
 
     sh = SpherizationHelper(Path(database), threads)
