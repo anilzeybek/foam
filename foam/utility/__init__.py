@@ -66,7 +66,7 @@ def load_mesh_file(mesh_filepath: Path) -> Trimesh:
 @dataclass
 class URDFMesh:
     name: str
-    filepath: Path
+    mesh: Trimesh
     xyz: NDArray
     rpy: NDArray
     scale: NDArray
@@ -108,25 +108,33 @@ def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
         if 'collision' not in link:
             continue
 
-        # TODO: Assumes one collision geometry right now
-        collision = link['collision']
-        if 'origin' in collision:
-            xyz = _urdf_array_to_np(collision['origin']['@xyz'])
-            rpy = _urdf_array_to_np(collision['origin']['@rpy'])
-        else:
-            xyz = np.array([0., 0., 0.])
-            rpy = np.array([0., 0., 0.])
+        if 'collision' not in link:
+            continue
 
-        geometry = collision['geometry']
-        if 'box' in geometry:
-            box = geometry['box']
-            size = _urdf_array_to_np(box['@size'])
-            primitives.append(URDFPrimitive(name, Box(size), xyz, rpy))
-        elif 'cylinder' in geometry:
-            cylinder = geometry['cylinder']
-            length = float(cylinder['@length'])
-            radius = float(cylinder['@radius'])
-            primitives.append(URDFPrimitive(name, Cylinder(radius, length), xyz, rpy))
+        collisions = link['collision']
+
+        if not isinstance(collisions, list):
+            collisions = [collisions]
+
+        for i, collision in enumerate(collisions):
+            if 'origin' in collision:
+                xyz = _urdf_array_to_np(collision['origin']['@xyz'])
+                rpy = _urdf_array_to_np(collision['origin']['@rpy'])
+            else:
+                xyz = np.array([0., 0., 0.])
+                rpy = np.array([0., 0., 0.])
+
+            geometry = collision['geometry']
+            if 'box' in geometry:
+                box = geometry['box']
+                size = _urdf_array_to_np(box['@size'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Box(size), xyz, rpy))
+
+            elif 'cylinder' in geometry:
+                cylinder = geometry['cylinder']
+                length = float(cylinder['@length'])
+                radius = float(cylinder['@radius'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy))
 
     return primitives
 
@@ -140,24 +148,29 @@ def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
         if 'collision' not in link:
             continue
 
-        # TODO: Assumes one collision geometry right now
-        collision = link['collision']
-        if 'origin' in collision:
-            xyz = _urdf_array_to_np(collision['origin']['@xyz'])
-            rpy = _urdf_array_to_np(collision['origin']['@rpy'])
-        else:
-            xyz = np.array([0., 0., 0.])
-            rpy = np.array([0., 0., 0.])
+        collisions = link['collision']
 
-        geometry = collision['geometry']
-        if 'mesh' in geometry:
-            mesh = geometry['mesh']
-            filename = _urdf_clean_filename(mesh['@filename'])
-            scale = _urdf_array_to_np(mesh['@scale']) if 'scale' in mesh else np.array([1., 1., 1.])
+        if not isinstance(collisions, list):
+            collisions = [collisions]
 
-            meshes.append(URDFMesh(name, urdf_dir / filename, xyz, rpy, scale))
+        for collision in collisions:
+            if 'origin' in collision:
+                xyz = _urdf_array_to_np(collision['origin']['@xyz'])
+                rpy = _urdf_array_to_np(collision['origin']['@rpy'])
+            else:
+                xyz = np.array([0., 0., 0.])
+                rpy = np.array([0., 0., 0.])
+
+            geometry = collision['geometry']
+            if 'mesh' in geometry:
+                mesh = geometry['mesh']
+                filename = _urdf_clean_filename(mesh['@filename'])
+                scale = _urdf_array_to_np(mesh['@scale']) if 'scale' in mesh else np.array([1., 1., 1.])
+                scale *= 0.85 # HACK: need to scale down to get some tight self collision working
+                meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(urdf_dir / filename), xyz, rpy, scale))
 
     return meshes
+
 
 def get_urdf_spheres(urdf: URDFDict) -> Iterator[tuple[float, float, float, float]]:
     primitives = []
@@ -170,7 +183,6 @@ def get_urdf_spheres(urdf: URDFDict) -> Iterator[tuple[float, float, float, floa
             link['collision'] = [link['collision']]
 
         for collision in link['collision']:
-
             if 'origin' in collision:
                 xyz = _urdf_array_to_np(collision['origin']['@xyz'])
                 rpy = _urdf_array_to_np(collision['origin']['@rpy'])
@@ -186,16 +198,39 @@ def get_urdf_spheres(urdf: URDFDict) -> Iterator[tuple[float, float, float, floa
 
 
 def set_urdf_spheres(urdf: URDFDict, spheres):
+    total_spheres = 0
     for link in urdf['robot']['link']:
         name = link['@name']
         if 'collision' not in link:
             continue
 
-        # TODO: Assumes one collision geometry right now
-        if name in spheres:
-            collision = []
-            spherization = spheres[name]
+        collisions = link['collision']
+
+        if not isinstance(collisions, list):
+            collisions = [collisions]
+
+        spherizations = []
+        for i, collision in enumerate(collisions):
+
+            geometry = collision['geometry']
+
+            if 'box' in geometry or 'cylinder' in geometry:
+                key = f"{name}::primitive{i}"
+                if key in spheres:
+                    spherizations.append(spheres[key])
+
+            elif 'mesh' in geometry:
+                mesh = geometry['mesh']
+                filename = _urdf_clean_filename(mesh['@filename'])
+                key = f"{name}::{filename}"
+
+                if key in spheres:
+                    spherizations.append(spheres[key])
+
+        collision = []
+        for spherization in spherizations:
             for sphere in spherization.spheres:
+                total_spheres += 1
                 collision.append(
                     {
                         'geometry': {
@@ -208,7 +243,9 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
                             }
                         }
                     )
-                link['collision'] = collision
+
+        link['collision'] = collision
+    print(f"spheres: {total_spheres}")
 
 
 def save_urdf(urdf: URDFDict, filename: Path):

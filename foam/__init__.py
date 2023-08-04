@@ -35,12 +35,17 @@ def spherize_mesh(
 
     loaded_mesh = loaded_mesh.copy()
 
-    if position is not None or orientation is not None:
-        tf = compose_matrix(angles=orientation, translate=position)
-        loaded_mesh.apply_transform(tf)
+    # Normalize center
+    low_bounds, high_bounds = loaded_mesh.bounds
+    offset = (high_bounds + low_bounds) / 2
+    loaded_mesh.apply_transform(translation_matrix(-offset))
 
     if scale is not None:
         loaded_mesh.apply_scale(scale)
+
+    if position is not None or orientation is not None:
+        tf = compose_matrix(angles=orientation, translate=position)
+        loaded_mesh.apply_transform(tf)
 
     if not check_valid_for_spherization(loaded_mesh):
         loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
@@ -55,8 +60,12 @@ def spherize_mesh(
         try:
             loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
             spheres = compute_medial_spheres(loaded_mesh, **spherization_kwargs)
+
         except:
             raise RuntimeError("Failed to process loaded_mesh.")
+
+    for sphere in spheres:
+        sphere.offset(offset)
 
     return spheres
 

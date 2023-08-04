@@ -4,6 +4,8 @@ from fire import Fire
 
 from foam import *
 
+from trimesh.primitives import Sphere
+from trimesh.nsphere import minimum_nsphere
 
 def main(
         filename: str = "assets/panda/panda.urdf",
@@ -24,14 +26,23 @@ def main(
     meshes = get_urdf_meshes(urdf)
 
     for mesh in meshes:
+
+        # branch_value = max(
+        #     int(mesh.mesh.volume * 10000 * volume_heuristic_ratio), branch
+        #     ) if use_volume_heuristic else branch
+
+        center, radius = minimum_nsphere(mesh.mesh.vertices)
+        vr = Sphere(radius, center).volume / mesh.mesh.volume
+        branch_value = min(int(vr * volume_heuristic_ratio), branch)
+        print(mesh.name, vr, branch_value)
         sh.spherize_mesh(
             mesh.name,
-            mesh.filepath,
+            mesh.mesh,
             mesh.scale,
             mesh.xyz,
             mesh.rpy,
             depth,
-            branch,
+            branch_value,
             manifold_leaves,
             simplification_ratio,
             )

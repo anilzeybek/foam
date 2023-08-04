@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<robot name="fetch" path="assets/fetch/fetch.urdf">
+<robot name="fetch" path="assets/fetch/fetch_simple.urdf">
 	<link name="base_link">
 		<inertial>
 			<origin rpy="0 0 0" xyz="-0.0036 0.0 0.0014"></origin>
@@ -17,9 +17,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.358269"></sphere>
+				<sphere radius="0.298438"></sphere>
 			</geometry>
-			<origin xyz="9.432544535823746e-05 0.001339756762812382 0.17982166675703268" rpy="0 0 0"></origin>
+			<origin xyz="-0.000401337134361256 0.00011862522935866755 0.16152286150666748" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="torso_lift_link">
@@ -39,9 +39,21 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.353495"></sphere>
+				<sphere radius="0.296955"></sphere>
 			</geometry>
-			<origin xyz="-0.02958539143681861 -2.234109150080828e-05 0.2989495346664115" rpy="0 0 0"></origin>
+			<origin xyz="-0.06594868426072598 0.001643123584747309 0.2739552845988274" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.085846"></sphere>
+			</geometry>
+			<origin xyz="0.08976611259543896 -6.117540258169244e-05 0.21367677048540118" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.103097"></sphere>
+			</geometry>
+			<origin xyz="0.030183938321616498 0.0008290083428495259 0.4968861967946341" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="head_pan_link">
@@ -61,9 +73,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.190023"></sphere>
+				<sphere radius="0.17117"></sphere>
 			</geometry>
-			<origin xyz="0.06194775441503525 -5e-06 0.055000590610921385" rpy="0 0 0"></origin>
+			<origin xyz="0.05569976003432274 1.14783542156275e-05 0.04920688624737412" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="head_tilt_link">
@@ -83,9 +95,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.132601"></sphere>
+				<sphere radius="0.114563"></sphere>
 			</geometry>
-			<origin xyz="0.0016211298188438447 0.0004317313049332902 0.0012347481818264035" rpy="0 0 0"></origin>
+			<origin xyz="-5.5233934462068385e-05 -1.5492642402648925e-05 4.850708347558975e-05" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="shoulder_pan_link">
@@ -105,9 +117,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.142867"></sphere>
+				<sphere radius="0.121961"></sphere>
 			</geometry>
-			<origin xyz="0.062371340751317124 -0.01670044268908753 0.02355580675835721" rpy="0 0 0"></origin>
+			<origin xyz="0.050949535472393045 -0.014729282094895838 0.02629969302219153" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="shoulder_lift_link">
@@ -127,9 +139,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.12809"></sphere>
+				<sphere radius="0.11537"></sphere>
 			</geometry>
-			<origin xyz="0.06083600359117985 0.01551000011920929 -2.3e-05" rpy="0 0 0"></origin>
+			<origin xyz="0.05477992179346085 0.014037633155941965 0.0005802220987677575" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="upperarm_roll_link">
@@ -149,9 +161,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.129371"></sphere>
+				<sphere radius="0.116504"></sphere>
 			</geometry>
-			<origin xyz="0.06353000098347664 -0.01355000011920929 -4e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.05706614002472162 -0.012404042016804218 -1e-06" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="elbow_flex_link">
@@ -171,9 +183,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.121692"></sphere>
+				<sphere radius="0.109691"></sphere>
 			</geometry>
-			<origin xyz="0.06120899630451202 0.01336900011920929 -2e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.05511495924836397 0.011887592469751837 -2e-06" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="forearm_roll_link">
@@ -193,9 +205,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.125186"></sphere>
+				<sphere radius="0.112823"></sphere>
 			</geometry>
-			<origin xyz="0.0575529955445528 -0.03547199821186066 1e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.051675399821817875 -0.0320085885372758 0.000368" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="wrist_flex_link">
@@ -215,9 +227,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.099855"></sphere>
+				<sphere radius="0.090216"></sphere>
 			</geometry>
-			<origin xyz="0.031105998301267625 0.0032740001341104506 1e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.02823937699842453 0.0028969436459541343 2.2811443209675885e-06" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="wrist_roll_link">
@@ -237,9 +249,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.056176"></sphere>
+				<sphere radius="0.051255"></sphere>
 			</geometry>
-			<origin xyz="-0.0017499998211860657 -1e-06 1e-06" rpy="0 0 0"></origin>
+			<origin xyz="-0.0015685242533385758 0.000104 1.5231609046459902e-05" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="gripper_link">
@@ -256,9 +268,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.092151"></sphere>
+				<sphere radius="0.077127"></sphere>
 			</geometry>
-			<origin xyz="-0.09323843125696327 -0.00022361957782746585 0.0010619548177453666" rpy="0 0 0"></origin>
+			<origin xyz="-0.08379528617030382 4.564955854415824e-05 0.0010935182496905327" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="r_gripper_finger_link">
@@ -278,9 +290,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.03289"></sphere>
+				<sphere radius="0.029619"></sphere>
 			</geometry>
-			<origin xyz="0.0006300001639127731 -0.008574999403953551 -1e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.00052796816921234 -0.007702186271786689 2.2338738441465557e-06" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="l_gripper_finger_link">
@@ -300,26 +312,10 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.03289"></sphere>
+				<sphere radius="0.029626"></sphere>
 			</geometry>
-			<origin xyz="0.0006280001639127732 0.008574999403953551 2e-06" rpy="0 0 0"></origin>
+			<origin xyz="0.0005277369080483914 0.007719623048305511 3.4871239677071916e-05" rpy="0 0 0"></origin>
 		</collision>
-	</link>
-	<link name="estop_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.002434512737072 -0.00330608315239905 0.00665139196650039"></origin>
-			<mass value="0.00196130439134723"></mass>
-			<inertia ixx="3.02810026604417E-07" ixy="-1.5862023118056E-08" ixz="3.16561396557437E-08" iyy="2.93322917127605E-07" iyz="-4.28833522751273E-08" izz="2.28513272627183E-07"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/estop_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.8 0 0 1"></color>
-			</material>
-		</visual>
 	</link>
 	<link name="torso_fixed_link">
 		<inertial>
@@ -338,9 +334,9 @@
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.305616"></sphere>
+				<sphere radius="0.276835"></sphere>
 			</geometry>
-			<origin xyz="-0.10113054020084876 0.0012420592395991747 0.2145773556969718" rpy="0 0 0"></origin>
+			<origin xyz="-0.09106494928320064 -0.0030697800053396526 0.19217154623571595" rpy="0 0 0"></origin>
 		</collision>
 	</link>
 	<link name="head_camera_link"></link>
@@ -384,13 +380,13 @@
 		<dynamics damping="1.0"></dynamics>
 		<limit effort="131.76" lower="-1.221" upper="1.518" velocity="1.454"></limit>
 	</joint>
-	<joint name="upperarm_roll_joint" type="continuous">
+	<joint name="upperarm_roll_joint" type="revolute">
 		<origin rpy="0 0 0" xyz="0.219 0 0"></origin>
 		<parent link="shoulder_lift_link"></parent>
 		<child link="upperarm_roll_link"></child>
 		<axis xyz="1 0 0"></axis>
 		<dynamics damping="5.0"></dynamics>
-		<limit effort="76.94" velocity="1.571"></limit>
+		<limit effort="76.94" velocity="1.571" lower="-3.14159" upper="3.14159"></limit>
 	</joint>
 	<joint name="elbow_flex_joint" type="revolute">
 		<origin rpy="0 0 0" xyz="0.133 0 0"></origin>
@@ -400,13 +396,13 @@
 		<dynamics damping="1.0"></dynamics>
 		<limit effort="66.18" lower="-2.251" upper="2.251" velocity="1.521"></limit>
 	</joint>
-	<joint name="forearm_roll_joint" type="continuous">
+	<joint name="forearm_roll_joint" type="revolute">
 		<origin rpy="0 0 0" xyz="0.197 0 0"></origin>
 		<parent link="elbow_flex_link"></parent>
 		<child link="forearm_roll_link"></child>
 		<axis xyz="1 0 0"></axis>
 		<dynamics damping="5.0"></dynamics>
-		<limit effort="29.35" velocity="1.571"></limit>
+		<limit effort="29.35" velocity="1.571" lower="-3.14159" upper="3.14159"></limit>
 	</joint>
 	<joint name="wrist_flex_joint" type="revolute">
 		<origin rpy="0 0 0" xyz="0.1245 0 0"></origin>
@@ -416,12 +412,12 @@
 		<dynamics damping="1.0"></dynamics>
 		<limit effort="25.7" lower="-2.16" upper="2.16" velocity="2.268"></limit>
 	</joint>
-	<joint name="wrist_roll_joint" type="continuous">
+	<joint name="wrist_roll_joint" type="revolute">
 		<origin rpy="0 0 0" xyz="0.1385 0 0"></origin>
 		<parent link="wrist_flex_link"></parent>
 		<child link="wrist_roll_link"></child>
 		<axis xyz="1 0 0"></axis>
-		<limit effort="7.36" velocity="2.268"></limit>
+		<limit effort="7.36" velocity="2.268" lower="-3.14159" upper="3.14159"></limit>
 		<dynamics damping="5.0"></dynamics>
 	</joint>
 	<joint name="gripper_axis" type="fixed">
@@ -441,12 +437,6 @@
 		<parent link="gripper_link"></parent>
 		<child link="l_gripper_finger_link"></child>
 		<axis xyz="0 -1 0"></axis>
-	</joint>
-	<joint name="estop_joint" type="fixed">
-		<origin rpy="1.5708 0 0" xyz="-0.12465 0.23892 0.31127"></origin>
-		<parent link="base_link"></parent>
-		<child link="estop_link"></child>
-		<axis xyz="0 0 0"></axis>
 	</joint>
 	<joint name="torso_fixed_joint" type="fixed">
 		<origin rpy="-6.12303176911189E-17 0 0" xyz="-0.086875 0 0.377425"></origin>

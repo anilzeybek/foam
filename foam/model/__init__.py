@@ -17,6 +17,9 @@ class Sphere:
 
         self.radius = r
 
+    def offset(self, offset: NDArray):
+        self.origin += offset
+
 
 @dataclass(slots = True)
 class Spherization:
@@ -30,6 +33,11 @@ class Spherization:
 
     def __lt__(self, other) -> bool:
         return self.mean_error < other.mean_error and self.best_error < other.best_error and self.worst_error < other.worst_error
+
+    def offset(self, offset: NDArray):
+        for sphere in self.spheres:
+            sphere.offset(offset)
+
 
 
 class SphereEncoder(JSONEncoder):

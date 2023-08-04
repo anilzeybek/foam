@@ -11,6 +11,7 @@ def main(
         output: str | None = None,
         depth: int = 1,
         branch: int = 8,
+        scale: float = 1.,
         manifold_leaves: int = 1000,
         simplify_ratio: float = 0.2
     ):
@@ -20,6 +21,7 @@ def main(
 
     spheres = spherize_mesh(
         mesh_filepath,
+        scale = np.array([scale] * 3),
         spherization_kwargs = {
             'depth': depth,
             'branch': branch,
