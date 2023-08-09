@@ -17,13 +17,14 @@ def main(
         volume_heuristic_ratio: float = 0.7,
         manifold_leaves: int = 1000,
         simplification_ratio: float = 0.2,
-        threads: int = 16
+        threads: int = 16,
+        shrinkage: float = 1.
     ):
 
     sh = SpherizationHelper(Path(database), threads)
 
     urdf = load_urdf(Path(filename))
-    meshes = get_urdf_meshes(urdf)
+    meshes = get_urdf_meshes(urdf, shrinkage)
 
     for mesh in meshes:
 
@@ -47,17 +48,21 @@ def main(
             simplification_ratio,
             )
 
-    primitives = get_urdf_primitives(urdf)
+    primitives = get_urdf_primitives(urdf, shrinkage)
     for primitive in primitives:
+        center, radius = minimum_nsphere(primitive.mesh.vertices)
+        vr = Sphere(radius, center).volume / primitive.mesh.volume
+        branch_value = min(int(vr * volume_heuristic_ratio), branch)
+        print(primitive.name, vr, branch_value)
+
         sh.spherize_mesh(
             primitive.name,
             primitive.mesh,
-            np.array([1., 1., 1.]),
+            primitive.scale,
             primitive.xyz,
             primitive.rpy,
             depth,
-            max(int(primitive.mesh.volume * 10000 *
-                    volume_heuristic_ratio), branch) if use_volume_heuristic else branch,
+            branch_value,
             manifold_leaves,
             simplification_ratio,
             )

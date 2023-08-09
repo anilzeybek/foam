@@ -78,6 +78,7 @@ class URDFPrimitive:
     mesh: Trimesh
     xyz: NDArray
     rpy: NDArray
+    scale: NDArray
 
 
 URDFDict = dict[str, Any]
@@ -101,7 +102,7 @@ def load_urdf(urdf_path: Path) -> URDFDict:
         return xml
 
 
-def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
+def get_urdf_primitives(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimitive]:
     primitives = []
     for link in urdf['robot']['link']:
         name = link['@name']
@@ -116,6 +117,7 @@ def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
         if not isinstance(collisions, list):
             collisions = [collisions]
 
+        scale = np.array([shrinkage] * 3)
         for i, collision in enumerate(collisions):
             if 'origin' in collision:
                 xyz = _urdf_array_to_np(collision['origin']['@xyz'])
@@ -128,18 +130,18 @@ def get_urdf_primitives(urdf: URDFDict) -> list[URDFPrimitive]:
             if 'box' in geometry:
                 box = geometry['box']
                 size = _urdf_array_to_np(box['@size'])
-                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Box(size), xyz, rpy))
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Box(size), xyz, rpy, scale))
 
             elif 'cylinder' in geometry:
                 cylinder = geometry['cylinder']
                 length = float(cylinder['@length'])
                 radius = float(cylinder['@radius'])
-                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy))
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale))
 
     return primitives
 
 
-def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
+def get_urdf_meshes(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
     urdf_dir = Path(urdf['robot']['@path']).parent
 
     meshes = []
@@ -166,7 +168,7 @@ def get_urdf_meshes(urdf: URDFDict) -> list[URDFMesh]:
                 mesh = geometry['mesh']
                 filename = _urdf_clean_filename(mesh['@filename'])
                 scale = _urdf_array_to_np(mesh['@scale']) if 'scale' in mesh else np.array([1., 1., 1.])
-                scale *= 0.85 # HACK: need to scale down to get some tight self collision working
+                scale *= shrinkage # HACK: need to scale down to get some tight self collision working
                 meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(urdf_dir / filename), xyz, rpy, scale))
 
     return meshes
