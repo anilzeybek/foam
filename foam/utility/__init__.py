@@ -13,6 +13,7 @@ from trimesh.exchange.load import load_mesh
 from trimesh.repair import *
 from trimesh.smoothing import filter_humphrey, filter_taubin
 from trimesh.primitives import Box, Cylinder
+from trimesh.primitives import Sphere as TMSphere
 
 import numpy as np
 
@@ -132,6 +133,11 @@ def get_urdf_primitives(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimi
                 size = _urdf_array_to_np(box['@size'])
                 primitives.append(URDFPrimitive(f"{name}::primitive{i}", Box(size), xyz, rpy, scale))
 
+            elif 'sphere' in geometry:
+                sphere = geometry['sphere']
+                radius = float(sphere['@radius'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", TMSphere(radius), xyz, rpy, scale))
+
             elif 'cylinder' in geometry:
                 cylinder = geometry['cylinder']
                 length = float(cylinder['@length'])
@@ -216,7 +222,7 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
 
             geometry = collision['geometry']
 
-            if 'box' in geometry or 'cylinder' in geometry:
+            if 'box' in geometry or 'cylinder' in geometry or 'sphere' in geometry:
                 key = f"{name}::primitive{i}"
                 if key in spheres:
                     spherizations.append(spheres[key])

@@ -18,7 +18,8 @@ def main(
         manifold_leaves: int = 1000,
         simplification_ratio: float = 0.2,
         threads: int = 16,
-        shrinkage: float = 1.
+        shrinkage: float = 1.,
+        **kwargs: float
     ):
 
     sh = SpherizationHelper(Path(database), threads)
@@ -35,7 +36,13 @@ def main(
         center, radius = minimum_nsphere(mesh.mesh.vertices)
         vr = Sphere(radius, center).volume / mesh.mesh.volume
         branch_value = min(int(vr * volume_heuristic_ratio), branch)
+
+        key = mesh.name.split(":")[0]
+        if key in kwargs:
+            branch_value = int(kwargs[key] * branch_value)
+
         print(mesh.name, vr, branch_value)
+
         sh.spherize_mesh(
             mesh.name,
             mesh.mesh,
@@ -53,6 +60,11 @@ def main(
         center, radius = minimum_nsphere(primitive.mesh.vertices)
         vr = Sphere(radius, center).volume / primitive.mesh.volume
         branch_value = min(int(vr * volume_heuristic_ratio), branch)
+
+        key = primitive.name.split(":")[0]
+        if key in kwargs:
+            branch_value = int(kwargs[key] * branch_value)
+
         print(primitive.name, vr, branch_value)
 
         sh.spherize_mesh(
