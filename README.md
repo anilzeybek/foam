@@ -1,8 +1,18 @@
 # Foam: Spherical Approximations of URDFs
 <p align="center">
   <img src="images/i2.png" alt="Original" width="400"/>
-  <img src="images/i1.png" alt="Spherized" width="400"/>
+  <img src="images/i1.png" alt="Spherized" width="375"/>
 </p>
+
+
+## Installation
+:warning: Work in Progress :warning:
+
+Install foam by using the command:
+`pip install foam`
+
+Install for editable development by running the following command from the root directory of the foam repository:
+`pip install -e .`
 
 ## Obtaining & Building Dependencies 
 ```sh
@@ -12,27 +22,30 @@ cmake -Bbuild -GNinja .
 cmake --build build/
 ```
 
-## Installation
-:warning: Work in Progress :warning:
-Install foam by using the command:
-`pip install foam`
-
-Install for editable development by running the following command from the root directory of the foam repository:
-`pip install -e .`
 
 ## Using Scripts
 
 In the `scripts` directory:
 
 - `python generate_spheres.py <mesh>`: creates spheres.
+  Specify `<mesh>` with the path to the mesh file that will be spherized.
+  
   Optionally specify `--depth <depth>` and `--branch <branching factor>` to control sphere generation process.
-  Can also specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
+  
+  Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
+  
   Valid mesh formats include `.DAE`, `.STL`, and `.OBJ`.
-- `python generate_sphere_urdf.py <urdf>`: creates spheres =.
+- `python generate_sphere_urdf.py <urdf>`: creates spheres.
+- Specify `<urdf>` with the path to the urdf file that will be spherized.
+- 
   Optionally specify `--depth <depth>` and `--branch <branching factor>` to control sphere generation process.
-  Can also specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
+  
+  Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
+  
   Takes urdfs as input rather than mesh formats.
 - `python visualize_spheres.py <mesh> <spheres>`: visualizes spheres and mesh.
+  Specify `<mesh>` with the path to the original mesh file.
+  Optionally specify `<spheres>` to visualize the spherized approximation on top of the original mesh.
   Optionally specify `--depth <depth>` for the sphere level to visualize.
 
 ## Third-party Dependencies
