@@ -47,13 +47,15 @@ def read_spherization_file(filename: Path, offset: NDArray) -> list[Spherization
     return output
 
 
-def compute_spheres_helper(mesh: Trimesh, command: list[str]) -> list[Spherization]:
+def compute_spheres_helper(mesh: Trimesh, command: list[str],method) -> list[Spherization]:
+    # print(command)
+    # print("flag 5")
     _ = mesh.vertex_normals    # Need to compute vertex normals
     with tempmesh() as (input_mesh, input_path):
         input_mesh.write(export_obj(mesh))
         input_mesh.flush()
 
-        output_file = input_path.parent / (input_path.stem + '-medial.sph')
+        output_file = input_path.parent / (input_path.stem + f'-{method}.sph')
         run(command + [str(input_path)], stdout = DEVNULL)
 
     if not output_file.exists():
@@ -68,10 +70,22 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str]) -> list[Spherizati
     return spheres
 
 
-def check_valid_for_spherization(mesh: Trimesh) -> bool:
+def check_valid_for_spherization(method, mesh: Trimesh) -> bool:
+    MAKE_TREE_PATH = None
+    if method == "grid":
+        MAKE_TREE_PATH = MAKE_TREE_GRID_PATH
+    elif method == "hubbard":
+        MAKE_TREE_PATH = MAKE_TREE_HUBBARD_PATH
+    elif method == "spawn":
+        MAKE_TREE_PATH = MAKE_TREE_SPAWN_PATH
+    elif method == "octree":
+        MAKE_TREE_PATH = MAKE_TREE_OCTREE_PATH
+    else:
+        MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH
+
     try:
-        command = [str(MAKE_TREE_MEDIAL_PATH), '-nopause', '-verify', '-depth', '0']
-        compute_spheres_helper(mesh, command)
+        command = [str(MAKE_TREE_PATH), '-nopause', '-verify', '-depth', '0']
+        compute_spheres_helper(mesh, command, method)
         return True
     except:
         return False
@@ -81,6 +95,7 @@ def compute_medial_spheres(
         mesh: Trimesh,
         depth: int = 1,
         branch: int = 8,
+        method: str = "medial",
         tester_level: int = 2,
         num_cover: int = 5000,
         min_cover: int = 5,
@@ -92,9 +107,25 @@ def compute_medial_spheres(
         optimize: bool = True,
         optimization_level: int = 1
     ) -> list[Spherization]:
+    # print(method)
+    # print("flag 3")
 
+    MAKE_TREE_PATH = None
+    if method == "grid":
+        MAKE_TREE_PATH = MAKE_TREE_GRID_PATH
+    elif method == "hubbard":
+        MAKE_TREE_PATH = MAKE_TREE_HUBBARD_PATH
+    elif method == "spawn":
+        MAKE_TREE_PATH = MAKE_TREE_SPAWN_PATH
+    elif method == "octree":
+        MAKE_TREE_PATH = MAKE_TREE_OCTREE_PATH
+    else:
+        MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH
+
+    # print(MAKE_TREE_PATH)
+    # print("flag 4")
     command = [
-        str(MAKE_TREE_MEDIAL_PATH),
+        str(MAKE_TREE_PATH),
         '-nopause',
         '-verify',
         '-branch',
@@ -124,7 +155,7 @@ def compute_medial_spheres(
     if optimize:
         command.extend(['-optimise', 'simplex'])
 
-    return compute_spheres_helper(mesh, command)
+    return compute_spheres_helper(mesh, command,method)
 
 
 def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> Trimesh:

@@ -46,11 +46,11 @@ def spherize_mesh(
     if position is not None or orientation is not None:
         tf = compose_matrix(angles=orientation, translate=position)
         loaded_mesh.apply_transform(tf)
-
-    if not check_valid_for_spherization(loaded_mesh):
+    method = spherization_kwargs['method']
+    if not check_valid_for_spherization(method, loaded_mesh):
         loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
 
-    if not check_valid_for_spherization(loaded_mesh):
+    if not check_valid_for_spherization(method, loaded_mesh):
         raise RuntimeError("Failed to make loaded_mesh valid!")
 
     try:
@@ -165,6 +165,7 @@ class SpherizationHelper:
             mesh: Trimesh | Path,
             scale: NDArray | None = None,
             position: NDArray | None = None,
+            method: str = "medial",
             orientation: NDArray | None = None,
             depth: int = 1,
             branch: int = 8,
@@ -181,6 +182,7 @@ class SpherizationHelper:
                 {
                     'depth': depth,
                     'branch': branch,
+                    'method': method,
                     },
                 {
                     'manifold_leaves': manifold_leaves,

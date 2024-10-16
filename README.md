@@ -1,10 +1,11 @@
 # Foam: Spherical Approximations of URDFs
 <p align="center">
-  <img src="images/i2.png" alt="Original" width="400"/>
-  <img src="images/i1.png" alt="Spherized" width="400"/>
+  <img src="images/i2.png" alt="Original" width="45%"/>
+  <img src="images/i1.png" alt="Spherized" width="45%"/>
 </p>
 
 ## Obtaining & Building Dependencies 
+Foam is supported on Linux/WSL. Visualization can be run on Windows natively using spherized files.
 ```sh
 git clone --recursive git@github.com:CoMMALab/foam.git
 cd foam

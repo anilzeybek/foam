@@ -11,6 +11,7 @@ def main(
         output: str | None = None,
         depth: int = 1,
         branch: int = 8,
+        method: str = "medial",
         scale: float = 1.,
         manifold_leaves: int = 1000,
         simplify_ratio: float = 0.2
@@ -18,13 +19,15 @@ def main(
     mesh_filepath = Path(mesh)
     if not mesh_filepath.exists:
         raise RuntimeError(f"Path {mesh} does not exist!")
-
+    # print(method)
+    # print("flag 1")
     spheres = spherize_mesh(
         mesh_filepath,
         scale = np.array([scale] * 3),
         spherization_kwargs = {
             'depth': depth,
             'branch': branch,
+            'method': method,
             },
         process_kwargs = {
             'manifold_leaves': manifold_leaves,
