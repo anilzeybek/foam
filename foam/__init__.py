@@ -169,9 +169,45 @@ class SpherizationHelper:
             orientation: NDArray | None = None,
             depth: int = 1,
             branch: int = 8,
+            testerLevels: int = 2,
+            numCover: int = 5000,
+            minCover: int = 5,
+            initSpheres: int = 1000,
+            minSpheres: int = 200,
+            erFact: int = 2,
+            expand: bool = True,
+            merge: bool = True,
+            burst: bool = False,
+            optimise: bool = True,
+            maxOptLevel: int = 1,
+            balExcess: float = 0.05,
+            verify: bool = True,
+            eval: bool = False,
+            num_samples: int = 500,
+            min_samples: int = 1,
             manifold_leaves: int = 1000,
             simplification_ratio: float = 0.2
         ):
+        spherization_kwargs = {
+        'depth': depth,
+        'branch': branch,
+        'method': method,
+        'testerLevels': testerLevels,
+        'numCover': numCover,
+        'minCover': minCover,
+        'initSpheres': initSpheres,
+        'minSpheres': minSpheres,
+        'erFact': erFact,
+        'expand': expand,
+        'merge': merge,
+        'burst': burst,
+        'optimise': optimise,
+        'maxOptLevel': maxOptLevel,
+        'balExcess': balExcess,
+        'verify': verify,
+        'num_samples': num_samples,
+        'min_samples': min_samples
+        }
         if not self.db.exists(name, branch, depth):
             self.ps.spherize_mesh(
                 name,
@@ -179,11 +215,7 @@ class SpherizationHelper:
                 scale,
                 position,
                 orientation,
-                {
-                    'depth': depth,
-                    'branch': branch,
-                    'method': method,
-                    },
+                spherization_kwargs,
                 {
                     'manifold_leaves': manifold_leaves,
                     'ratio': simplification_ratio,
