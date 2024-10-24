@@ -54,12 +54,12 @@ def spherize_mesh(
         raise RuntimeError("Failed to make loaded_mesh valid!")
 
     try:
-        spheres = compute_medial_spheres(loaded_mesh, **spherization_kwargs)
+        spheres = compute_spheres(loaded_mesh, **spherization_kwargs)
 
     except:
         try:
             loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
-            spheres = compute_medial_spheres(loaded_mesh, **spherization_kwargs)
+            spheres = compute_spheres(loaded_mesh, **spherization_kwargs)
 
         except:
             raise RuntimeError("Failed to process loaded_mesh.")

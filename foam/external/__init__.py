@@ -56,6 +56,7 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str],method) -> list[Sph
         input_mesh.flush()
 
         output_file = input_path.parent / (input_path.stem + f'-{method}.sph')
+        print(command)
         run(command + [str(input_path)], stdout = DEVNULL)
 
     if not output_file.exists():
@@ -91,24 +92,28 @@ def check_valid_for_spherization(method, mesh: Trimesh) -> bool:
         return False
 
 
-def compute_medial_spheres(
+def compute_spheres(
         mesh: Trimesh,
         depth: int = 1,
         branch: int = 8,
-        method: str = "medial",
-        tester_level: int = 2,
-        num_cover: int = 5000,
-        min_cover: int = 5,
-        init_spheres: int = 1000,
-        min_spheres: int = 200,
-        er_fact: int = 2,
-        expand: bool = True,
-        merge: bool = True,
-        optimize: bool = True,
-        optimization_level: int = 1
+        method: str = "medial",  # Can be 'medial', 'grid', 'spawn', 'octree', or 'hubbard'
+        testerLevels: int = 2,  # Number of points to represent a sphere when evaluating fit (e.g., -1, 1, 2)
+        numCover: int = 5000,  # Number of sample points to cover object with
+        minCover: int = 5,  # Minimum number of sample points per triangle
+        initSpheres: int = 1000,  # Initial number of spheres in medial axis approximation (for 'medial' method)
+        minSpheres: int = 200,  # Minimum number of spheres for each sub-region (for 'medial' method)
+        erFact: int = 2,  # Error reduction factor when refining the medial axis (for 'medial' method)
+        expand: bool = True,  # Use the EXPAND algorithm (for 'medial' method)
+        merge: bool = True,  # Use the MERGE algorithm (for 'medial' method)
+        burst: bool = False,  # Use the BURST algorithm (for 'medial' method)
+        optimise: bool = True,  # Apply optimization to the sphere-tree
+        maxOptLevel: int = 1,  # Maximum level of the sphere-tree to apply optimization (0 = first set only)
+        balExcess: float = 0.05,  # Extra error allowed during BALANCE optimization (for 'medial' method)
+        verify: bool = False,  # Verify the model is suitable for use
+
+        num_samples: int = 500,  # Number of sample points for Hubbard's method (for 'hubbard' method)
+        min_samples: int = 1  # Minimum number of sample points per triangle (for 'hubbard' method)
     ) -> list[Spherization]:
-    # print(method)
-    # print("flag 3")
 
     MAKE_TREE_PATH = None
     if method == "grid":
@@ -120,43 +125,104 @@ def compute_medial_spheres(
     elif method == "octree":
         MAKE_TREE_PATH = MAKE_TREE_OCTREE_PATH
     else:
-        MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH
+        MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH  # Default to medial if unspecified
 
-    # print(MAKE_TREE_PATH)
-    # print("flag 4")
+    # command = [
+    #     str(MAKE_TREE_PATH),
+    #     '-nopause',
+    #     '-verify',
+    #     '-branch',
+    #     str(branch),
+    #     '-depth',
+    #     str(depth),
+    #     '-testerLevels',
+    #     str(tester_level),
+    #     '-numCover',
+    #     str(num_cover),
+    #     '-minCover',
+    #     str(min_cover),
+    #     '-initSpheres',
+    #     str(init_spheres),
+    #     '-minSpheres',
+    #     str(min_spheres),
+    #     '-erFact',
+    #     str(er_fact),
+    #     '-maxOptLevel',
+    #     str(optimization_level),
+    #     ]
+
+    # Initial base command for all methods
     command = [
         str(MAKE_TREE_PATH),
         '-nopause',
-        '-verify',
+        '-verify' if verify else '',  # Optional verification flag
         '-branch',
         str(branch),
         '-depth',
-        str(depth),
-        '-testerLevels',
-        str(tester_level),
-        '-numCover',
-        str(num_cover),
-        '-minCover',
-        str(min_cover),
-        '-initSpheres',
-        str(init_spheres),
-        '-minSpheres',
-        str(min_spheres),
-        '-erFact',
-        str(er_fact),
-        '-maxOptLevel',
-        str(optimization_level),
-        ]
+        str(depth)
+    ]
 
+    # tester_level flag should only be used for 'medial' and 'grid'
+    if method in ["medial","grid", "spawn"]:
+        command.extend([
+            '-testerLevels',
+            str(testerLevels)
+        ])
+
+    # Method-specific flags
+    if method in ["medial", "grid", "spawn"]:
+        command.extend([
+            '-numCover',
+            str(numCover),
+            '-minCover',
+            str(minCover)
+        ])
+
+    if method == "medial":
+        command.extend([
+            '-initSpheres',
+            str(initSpheres),
+            '-minSpheres',
+            str(minSpheres),
+            '-erFact',
+            str(erFact),
+            '-maxOptLevel',
+            str(maxOptLevel)
+        ])
     if expand:
         command.append('-expand')
     if merge:
         command.append('-merge')
-    if optimize:
-        command.extend(['-optimise', 'simplex'])
+    if burst:
+        command.append('-burst')
 
-    return compute_spheres_helper(mesh, command,method)
+    if balExcess > 0:
+        command.extend(['-balExcess', str(balExcess)])
 
+    if method == "hubbard":
+        command.extend([
+            '-numSamples',
+            str(num_samples),
+            '-minSamples',
+            str(min_samples)
+        ])
+
+    if optimise and method != "medial":
+        command.extend(['-optimise', 'simplex'])  # Simplex optimization applied to non-medial methods
+
+
+    # Clean up empty flags
+    # command = [flag for flag in command if flag]
+
+    print(command)
+    # if expand:
+    #     command.append('-expand')
+    # if merge:
+    #     command.append('-merge')
+    # if optimize:
+    #     command.extend(['-optimise', 'simplex'])
+
+    return compute_spheres_helper(mesh, command, method)
 
 def simplify(mesh: Trimesh, ratio: float = 0.5, aggressiveness: float = 7.0) -> Trimesh:
     with tempmesh() as (input_mesh, input_path):
