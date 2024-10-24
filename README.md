@@ -32,7 +32,7 @@ In the `scripts` directory:
   
    > Specify `<mesh>` with the path to the mesh file that will be spherized.
   
-   > Optionally specify arguments such as `--depth <depth>` and `--branch <branching factor>` to control sphere generation process. Full list of arguments for different methods can be found at [mlund/spheretree on GitHub](https://github.com/mlund/spheretree?tab=readme-ov-file#programs)
+   > Optionally specify arguments such as `--depth <depth>` and `--branch <branching factor>` to control sphere generation process. Full list of spherization arguments for different methods can be found at [mlund/spheretree on GitHub](https://github.com/mlund/spheretree?tab=readme-ov-file#programs).
   
    > Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
   
@@ -41,7 +41,7 @@ In the `scripts` directory:
   
   > Specify `<urdf>` with the path to the urdf file that will be spherized.
   
-  > Optionally specify `--depth <depth>` and `--branch <branching factor>` to control sphere generation process.
+  > Optionally specify arguments such as `--depth <depth>` and `--branch <branching factor>` to control sphere generation process. Full list of spherization arguments for different methods can be found at [mlund/spheretree on GitHub](https://github.com/mlund/spheretree?tab=readme-ov-file#programs).
   
   > Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
   
