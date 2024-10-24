@@ -31,6 +31,8 @@ In the `scripts` directory:
  - `python generate_spheres.py <mesh>`: creates spheres.
   
    > Specify `<mesh>` with the path to the mesh file that will be spherized.
+
+   > Optionally specify spherization algorithm using `--method <spherization algorithm>`. Uses medial algorithm for spherization by default. Available algorithms include `medial`, `spawn`, `grid`, `hubbard`, and `octree`.
   
    > Optionally specify arguments such as `--depth <depth>` and `--branch <branching factor>` to control sphere generation process. Full list of spherization arguments for different methods can be found at [mlund/spheretree on GitHub](https://github.com/mlund/spheretree?tab=readme-ov-file#programs).
   
@@ -40,6 +42,8 @@ In the `scripts` directory:
 - `python generate_sphere_urdf.py <urdf>`: creates spheres.
   
   > Specify `<urdf>` with the path to the urdf file that will be spherized.
+
+  > Optionally specify spherization algorithm using `--method <spherization algorithm>`. Uses medial algorithm for spherization by default. Available algorithms include `medial`, `spawn`, `grid`, `hubbard`, and `octree`.
   
   > Optionally specify arguments such as `--depth <depth>` and `--branch <branching factor>` to control sphere generation process. Full list of spherization arguments for different methods can be found at [mlund/spheretree on GitHub](https://github.com/mlund/spheretree?tab=readme-ov-file#programs).
   
