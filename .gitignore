@@ -30,3 +30,6 @@ Makefile
 /foam/external/manifold_old
 /foam/external/simplify_old
 PAT.txt
+/lib
+/lib64
+/bin
