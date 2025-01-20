@@ -4,6 +4,7 @@ from pathlib import Path
 from fire import Fire
 
 from foam import *
+import time
 
 
 def main(
@@ -32,6 +33,9 @@ def main(
         num_samples: int = 500,
         min_samples: int = 1
     ):
+
+    start_time = time.time()
+
     mesh_filepath = Path(mesh)
     if not mesh_filepath.exists():
         raise RuntimeError(f"Path {mesh} does not exist!")
@@ -79,6 +83,10 @@ def main(
     # Write the result to a JSON file
     with open(output, 'w') as f:
         f.write(dumps(spheres, indent=4, cls=SphereEncoder))
+
+    end_time = time.time()
+
+    print(f"Generated spheres in {end_time - start_time:.6f} seconds")
 
 
 
