@@ -46,7 +46,7 @@ To run the docker container from the image, run
 Run the following to compile submodules:
 ```
 cd foam
-cmake -Build -GNinja .
+cmake -Bbuild -GNinja .
 cmake --build build/
 ```
 
