@@ -40,7 +40,15 @@ To build the image, run:
 
 ### Step 5: Running the docker container
 To run the docker container from the image, run
-```docker run -it --name=foam foam-image ```
+```docker run -it -v "$(pwd)/:/foam"  --name=foam foam-image```
+
+### Step 6: Compile Libraries
+Run the following to compile submodules:
+```
+cd foam
+cmake -Build -GNinja .
+cmake --build build/
+```
 
 For more details on display forwarding and other docker management commands, see the following:
 https://github.com/saiccoumar/PX4_Docker_Config
