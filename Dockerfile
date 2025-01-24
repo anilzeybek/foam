@@ -34,22 +34,5 @@ RUN apt-get update && apt-get upgrade -y && \
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-RUN --mount=type=secret,id=github_token \
-    GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
-    git config --global url."https://${GITHUB_TOKEN}@github.com".insteadOf "https://github.com" && \
-    git clone https://github.com/CoMMALab/foam && \
-    cd foam && \
-    # Modify submodule URLs to use HTTPS instead of SSH
-    sed -i 's|git@github.com:|https://${GITHUB_TOKEN}@github.com/|g' .gitmodules && \
-    git submodule update --init --recursive
-
-
-# Set the default working directory
-WORKDIR /foam
-
-# Run the build process
-RUN cmake -Bbuild -GNinja . && \
-    cmake --build build/
-
 # Default command
 CMD ["bash"]
