@@ -42,6 +42,13 @@ To build the image, run:
 To run the docker container from the image, run
 ```docker run -it -v "$(pwd)/:/foam"  --name=foam foam-image```
 
+To re-enter the docker container, run
+```docker exec -it foam /bin/bash```
+
+To start and stop a container, run
+```docker start foam```
+```docker stop foam```
+
 ### Step 6: Compile Libraries
 Run the following to compile submodules:
 ```
