@@ -34,5 +34,33 @@ RUN apt-get update && apt-get upgrade -y && \
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-# Default command
+RUN python3 -m pip config set global.break-system-packages true
+RUN pip install \
+    contourpy==1.3.1 \
+    cycler==0.12.1 \
+    fire==0.7.0 \
+    fonttools==4.55.3 \
+    kiwisolver==1.4.8 \
+    matplotlib==3.10.0 \
+    numpy==2.2.2 \
+    packaging==24.2 \
+    pillow==11.1.0 \
+    pyglet==1.5.31 \
+    pyparsing==3.2.1 \
+    python-dateutil==2.9.0.post0 \
+    scipy==1.15.1 \
+    six==1.17.0 \
+    termcolor==2.5.0 \
+    trimesh==4.5.3 \
+    xmltodict==0.14.2
+
+WORKDIR /foam
+
+# Copy the startup script
+COPY startup.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/startup.sh
+
+# Set the startup script as the entrypoint
+ENTRYPOINT ["/usr/local/bin/startup.sh"]
+
 CMD ["bash"]
