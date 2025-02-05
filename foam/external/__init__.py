@@ -126,7 +126,7 @@ def compute_spheres(
         MAKE_TREE_PATH = MAKE_TREE_OCTREE_PATH
     else:
         MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH  # Default to medial if unspecified
-
+    
     # command = [
     #     str(MAKE_TREE_PATH),
     #     '-nopause',
