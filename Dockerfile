@@ -30,9 +30,7 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Set ARG for GitHub token
-ARG GITHUB_TOKEN
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+
 
 RUN python3 -m pip config set global.break-system-packages true
 RUN pip install \

@@ -36,7 +36,7 @@ export DOCKER_BUILDKIT=1
 ```
 
 To build the image, run:
-```docker build --secret id=github_token,src=PAT.txt -t foam-image .```
+```docker build -t foam-image .```
 
 ### Step 5: Running the docker container
 To run the docker container from the image, run
