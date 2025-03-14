@@ -12,7 +12,10 @@ Install foam by using the command:
 `pip install foam`
 
 Install for editable development by running the following command from the root directory of the foam repository:
-`pip install -e .`
+`pip install -e .` and `pip install -r requirements.txt`
+
+## Docker
+Navigate to the [Docker quickstart](https://github.com/CoMMALab/foam/blob/master/DOCKER_QUICKSTART.md) for detailed instructions.
 
 ## Obtaining & Building Dependencies 
 Foam is supported on Linux/WSL. Visualization can be run on Windows natively using spherized files.
@@ -28,7 +31,7 @@ cmake --build build/
 
 In the `scripts` directory:
 
- - `python generate_spheres.py <mesh>`: creates spheres.
+ - `python generate_spheres.py <mesh>`: Generates and outputs a JSON file in scripts directory given a mesh input file.
   
    > Specify `<mesh>` with the path to the mesh file that will be spherized.
 
@@ -39,7 +42,7 @@ In the `scripts` directory:
    > Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
   
    > Valid mesh formats include `.DAE`, `.STL`, and `.OBJ`.
-- `python generate_sphere_urdf.py <urdf>`: creates spheres.
+- `python generate_sphere_urdf.py <urdf>`: Generates and outputs a JSON file in scripts directory given a URDF input file.
   
   > Specify `<urdf>` with the path to the urdf file that will be spherized.
 
@@ -50,7 +53,7 @@ In the `scripts` directory:
   > Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
   
   > Takes urdfs as input rather than mesh formats.
-- `python visualize_spheres.py <mesh> <spheres>`: visualizes spheres and mesh.
+- `python visualize_spheres.py <mesh> <spheres>`: Visualizes spheres and mesh.
   
   > Specify `<mesh>` with the path to the original mesh file.
   
