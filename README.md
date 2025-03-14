@@ -4,26 +4,23 @@
   <img src="images/i1.png" alt="Spherized" width="45%"/>
 </p>
 
+## Foam
+The foam tool is an automated mesh simplification framework for generating spherical approximations of robot geometries directly from Universal Robot Description Format (URDF) specifications. Foam outputs a procesed URDF file with all the collision geometries replaced with spherical primitives. Spherized meshes can reduce the computational load of modeling robots, have better support across simulators, and fix mesh defects while maintaining an accurate approximation of the source model.
 
 ## Installation
-:warning: Work in Progress :warning:
+Foam can either be installed natively on linux/wsl or through a dockerized container. We recommend using the dockerized build for cleaner dependency management and resource utilization monitoring.
 
-Install foam by using the command:
-`pip install foam`
-
-Install for editable development by running the following command from the root directory of the foam repository:
-`pip install -e .` and `pip install -r requirements.txt`
-
-## Docker
+## Building with Docker 
 Navigate to the [Docker quickstart](https://github.com/CoMMALab/foam/blob/master/DOCKER_QUICKSTART.md) for detailed instructions.
 
 ## Obtaining & Building Dependencies 
-Foam is supported on Linux/WSL. Visualization can be run on Windows natively using spherized files.
+Foam is supported on Linux/WSL with python3.11 and cmake 3.29. Output visualization can be run on Windows/MacOS natively using spherized files.
 ```sh
-git clone --recursive git@github.com:CoMMALab/foam.git
+git clone --recursive https://github.com/CoMMALab/foam.git
 cd foam
 cmake -Bbuild -GNinja .
 cmake --build build/
+pip install -r requirements.txt
 ```
 
 
