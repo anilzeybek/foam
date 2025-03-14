@@ -12,18 +12,8 @@ Docker Desktop comes with all components of Docker that are necessary to make ou
 https://www.docker.com/products/docker-desktop/
 ### Step 2: Download the docker file from this repository. 
 Download `Dockerfile` and add it to a folder
-### Step 3: Retrieve a Personal Access Token (PAT)
-As foam is currently a private repository, a PAT is required to clone the repo within a docker environment
-Steps:
-* Navigate to your Github profile
-* Click settings
-* Click developer tools
-* Click Personal Access Tokens
-* Click Tokens (classic)
-* Generate a new classic token. Give it repo access, and modify expiration settings if necessary
-* Copy the generated PAT to a file named PAT.txt within the same directory as the Dockerfile
 
-### Step 4: Building the Docker image
+### Step 3: Building the Docker image
 First set the DOCKER_BUILDKIT environment variable. This speeds up Docker builds and allows utilizing secrets for private repository access.
 On windows, run
 ```
@@ -38,7 +28,7 @@ export DOCKER_BUILDKIT=1
 To build the image, run:
 ```docker build -t foam-image .```
 
-### Step 5: Running the docker container
+### Step 4: Running the docker container
 To run the docker container from the image, run
 ```docker run -it -v "$(pwd)/:/foam"  --name=foam foam-image```
 
