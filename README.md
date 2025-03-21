@@ -76,3 +76,16 @@ Compiled script binaries are copied into the `foam/external` directory.
 
 <img src="images/pipeline.png" alt="Pipeline" />
 
+## Citation:
+If you'd like to cite this work, please use the following:
+```
+@misc{2025foamtoolsphericalapproximation,
+      title={Foam: A Tool for Spherical Approximation of Robot Geometry}, 
+      author={Sai Coumar and Gilbert Chang and Nihar Kodkani and Zachary Kingston},
+      year={2025},
+      eprint={2503.13704},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2503.13704}, 
+}
+```
