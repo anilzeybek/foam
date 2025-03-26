@@ -7,6 +7,20 @@
 ## Foam
 The foam tool is an automated mesh simplification framework for generating spherical approximations of robot geometries directly from Universal Robot Description Format (URDF) specifications. Foam outputs a procesed URDF file with all the collision geometries replaced with spherical primitives. Spherized meshes can reduce the computational load of modeling robots, have better support across simulators, and fix mesh defects while maintaining an accurate approximation of the source model.
 
+## Citation:
+If you'd like to cite this work, please use the following and see the [associated paper](https://arxiv.org/abs/2503.13704):
+```
+@misc{2025foamtoolsphericalapproximation,
+      title={Foam: A Tool for Spherical Approximation of Robot Geometry}, 
+      author={Sai Coumar and Gilbert Chang and Nihar Kodkani and Zachary Kingston},
+      year={2025},
+      eprint={2503.13704},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2503.13704}, 
+}
+```
+
 ## Installation
 Foam can either be installed natively on linux/wsl or through a dockerized container. We recommend using the dockerized build for cleaner dependency management and resource utilization monitoring.
 
@@ -76,16 +90,3 @@ Compiled script binaries are copied into the `foam/external` directory.
 
 <img src="images/pipeline.png" alt="Pipeline" />
 
-## Citation:
-If you'd like to cite this work, please use the following:
-```
-@misc{2025foamtoolsphericalapproximation,
-      title={Foam: A Tool for Spherical Approximation of Robot Geometry}, 
-      author={Sai Coumar and Gilbert Chang and Nihar Kodkani and Zachary Kingston},
-      year={2025},
-      eprint={2503.13704},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2503.13704}, 
-}
-```
