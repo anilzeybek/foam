@@ -1,7 +1,6 @@
 # Foam: Spherical Approximations of URDFs
 <p align="center">
-  <img src="images/i2.png" alt="Original" width="45%"/>
-  <img src="images/i1.png" alt="Spherized" width="45%"/>
+  <img src="images/menagerie.png" width="40%"/>
 </p>
 
 ## Foam
@@ -88,5 +87,5 @@ Compiled script binaries are copied into the `foam/external` directory.
 #### [SphereTree](https://github.com/mlund/spheretree)
   The code in the `./spheretree` directory has been copied from the linked directory and modified to build on modern systems with `CMake` rather than `autotools`. SphereTree has a variety of algorithms to construct sphere-tree representations of polygonal models, but foam currently uses the MedialTree algorithm for SphereTree generation. The output is formatted and dumped into an output file.
 
-<img src="images/pipeline.png" alt="Pipeline" />
+<img src="images/pipeline_w_curobo.png" alt="Pipeline" />
 
