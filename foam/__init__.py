@@ -3,6 +3,7 @@ from json import load as jsload
 from json import dumps as jsdumps
 from concurrent.futures import ThreadPoolExecutor, Future
 from concurrent.futures import wait as future_wait
+from trimesh.primitives import Sphere as TMSphere
 
 from .utility import *
 from .external import *
@@ -20,20 +21,37 @@ def smooth_manifold(mesh: Trimesh, manifold_leaves: int = 1000, ratio = 0.2) -> 
 
 
 def spherize_mesh(
-        mesh: Trimesh | Path,
-        scale: NDArray | None = None,
-        position: NDArray | None = None,
-        orientation: NDArray | None = None,
-        spherization_kwargs: dict[str, Any] = {},
-        process_kwargs: dict[str, Any] = {}
-    ) -> list[Spherization]:
+    name: str,
+    mesh: Trimesh | Path,
+    scale: NDArray | None = None,
+    position: NDArray | None = None,
+    orientation: NDArray | None = None,
+    spherization_kwargs: dict[str, Any] = {},
+    process_kwargs: dict[str, Any] = {},
+) -> list[Spherization]:
 
+    print(f"Spherizing {name}")
     if isinstance(mesh, Path):
+        print(f"Processing {mesh}")
         loaded_mesh = load_mesh_file(mesh)
     else:
+        print("Processing pre-loaded mesh")
         loaded_mesh = mesh
 
     loaded_mesh = loaded_mesh.copy()
+
+    if isinstance(mesh, TMSphere):
+        x, y, z = mesh.center
+        r = mesh.primitive.radius
+        return [
+            Spherization(
+                spheres=[Sphere(x, y, z, r)],
+                mean_error=0.0,
+                best_error=0.0,
+                worst_error=0.0,
+            )
+        ] * (spherization_kwargs["depth"] + 1)
+        # NOTE: Because depth seems to be 0-indexed and determines the number of fineness levels for the spherization
 
     if position is not None or orientation is not None:
         tf = compose_matrix(angles=orientation, translate=position)
@@ -88,8 +106,15 @@ class ParallelSpherizer:
             process_kwargs: dict[str, Any] = {}
         ) -> Future[list[Spherization]]:
         future = self.executor.submit(
-            spherize_mesh, mesh, scale, position, orientation, spherization_kwargs, process_kwargs
-            )
+            spherize_mesh,
+            name,
+            mesh,
+            scale,
+            position,
+            orientation,
+            spherization_kwargs,
+            process_kwargs,
+        )
 
         self.waiting[name] = future
         return future
