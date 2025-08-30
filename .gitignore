@@ -34,3 +34,4 @@ PAT.txt
 /lib64
 /bin
 /gen
+venv/
